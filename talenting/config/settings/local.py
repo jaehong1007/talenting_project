@@ -6,13 +6,11 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     '.yabi.kr',
 ]
+CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'database.json')
+database = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+
+DATABASES = database['databases']
 
 SECRET_KEY = config_secret_common['django']['secret_key']
 
