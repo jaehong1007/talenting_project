@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 import json
 import os
+from django.contrib.auth import password_validation
+password_validation
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -108,6 +110,9 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
+
+#Custom User
+AUTH_USER_MODEL = 'member.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
