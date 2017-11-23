@@ -1,7 +1,7 @@
 from rest_framework import generics
 
 from post.serializer import EventSerializer
-from member.models import Event
+from post.models import Event
 
 
 class EventList(generics.ListCreateAPIView):

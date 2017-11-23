@@ -9,7 +9,12 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = (
             'title',
-            'context',
+            'program',
+            'noted_item',
+            'country',
+            'state',
+            'city',
+            'price',
             'photo',
             'starting_date',
             'closing_date',
@@ -23,3 +28,4 @@ class EventForm(forms.ModelForm):
                 raise ValueError('Author field is required')
             self.instance.author = author
         return super().save(*args, **kwargs)
+

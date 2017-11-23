@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'member',
     'post',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -93,6 +94,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8000',
+
+)
 
 
 # Database
