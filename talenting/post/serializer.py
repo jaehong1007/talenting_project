@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from member.models import Event
+from post.models import Event
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -11,7 +11,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = (
             'pk',
             'photo',
-            # 'author',
+            'author',
             'created_at',
             'updated_at',
         )

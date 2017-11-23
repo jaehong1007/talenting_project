@@ -7,10 +7,10 @@ from post.models import Event
 
 def event_list(request):
     events = Event.objects.all()
-    # comment_form = CommentForm()
+    comment_form = CommentForm()
     context = {
         'events': events,
-        # 'comment_form': comment_form,
+        'comment_form': comment_form,
     }
     return render(request, context)
 
