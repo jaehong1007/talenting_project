@@ -16,11 +16,17 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from post.apis import EventList, EventDetail
+
+from member.apis import SignUp
+from member.views import UserActivateView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^event/$', EventList.as_view(), name='event_list'),
-    url(r'^event/(?P<pk>\d+)/$', EventDetail.as_view(), name='event_detail'),
+    url(r'^signup/$', SignUp.as_view(), name='signup'),
+    url(
+        r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        UserActivateView.as_view(),
+        name='activate'
+    ),
 
 ]

@@ -21,7 +21,8 @@ class MyUserManager(BaseUserManager):
         )
         user.is_active = True
         user.is_admin = True
-        user.save(using=self._db)
+
+        user.save(using=self.db)
         return user
 
 
@@ -60,3 +61,15 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+# class GuestReview(models.Model):
+#     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
+#     host = models.ForeignKey(User, related_name='user_review_by_host')
+#     guest = models.ForeignKey(User, related_name='user_review_about_guest')
+#     review = models.TextField()
+#     rating = models.PositiveSmallIntegerField()
+#     active = models.BooleanField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+#
+#     class Meta:
+#         ordering = ['-created_at']
