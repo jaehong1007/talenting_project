@@ -86,7 +86,7 @@ class HostingReviewModelTest(TestCase):
         self.assertEqual(hosting_review.host, host)
         self.assertEqual(hosting_review.hosting, hosting)
         self.assertEqual(hosting_review.text, '')
-        #self.assertEqual(hosting_review.recommend, True)
+        self.assertEqual(hosting_review.recommend, True)
 
 
 class PhotoModelTest(TestCase):

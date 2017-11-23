@@ -44,6 +44,7 @@ class HostingReview(models.Model):
     host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.CASCADE)
     hosting = models.ForeignKey(Hosting, related_name='where_is_reviewed')
     text = models.TextField()
+    recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
