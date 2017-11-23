@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django_extensions',
 
     'member',
+    'post',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +110,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'member.User'
+
 # Internationalization
 LANGUAGE_CODE = 'ko-kr'
 TIME_ZONE = 'UTC'
@@ -117,3 +120,4 @@ USE_L10N = True
 USE_TZ = True
 
 DEBUG = True
+
