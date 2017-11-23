@@ -26,7 +26,7 @@ RUN         mkdir -p /var/log/uwsgi/app
 
 # manage.py
 WORKDIR     /srv/app/talenting
-# RUN         /root/.pyenv/versions/app/bin/python manage.py collectstatic --noinput
+RUN         /root/.pyenv/versions/app/bin/python manage.py collectstatic --noinput
 RUN         /root/.pyenv/versions/app/bin/python manage.py migrate --noinput
 
 # supervisor

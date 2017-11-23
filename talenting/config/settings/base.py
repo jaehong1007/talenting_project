@@ -15,7 +15,7 @@ import os
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-TEMPLATE_DIR = os.path.join(ROOT_DIR, 'templates')
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 
 # Config Paths
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
@@ -34,6 +34,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR
 ]
+STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_extensions',
     'member',
+    'post',
 ]
 
 MIDDLEWARE = [
@@ -97,14 +99,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
