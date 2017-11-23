@@ -1,13 +1,16 @@
+import io
+from django.core.files import File
 from django.test import TestCase
 
 from member.models import User
-from .models import HostingReview
-from .models import Hosting
+from .models import Hosting, HostingReview, Photo
 
 USER_EMAIL = 'user@gmail.com'
 USER_PASSWORD = 'password'
 HOST_EMAIL = 'host@gmail.com'
 HOST_PASSWORD = 'password'
+IMAGE = File(io.BytesIO())
+PHOTO_NAME = 'My house'
 
 
 def create_user(email, password):
@@ -32,6 +35,15 @@ def create_hosting_review(user, host, hosting):
         hosting=hosting,
     )
     return hosting_review
+
+
+def create_photo(hosting, image, name):
+    photo = Photo.objects.create(
+        place=hosting,
+        image=image,
+        name=name,
+    )
+    return photo
 
 
 class HostingModelTest(TestCase):
@@ -63,12 +75,27 @@ class HostingModelTest(TestCase):
         self.assertEqual(hosting.published, False)
 
 
-class HostingReviewTest(TestCase):
+class HostingReviewModelTest(TestCase):
     def test_saving_and_retrieving_hosting_review(self):
         user = create_user(USER_EMAIL, USER_PASSWORD)
         host = create_user(HOST_EMAIL, HOST_PASSWORD)
-        hosting = create_hosting(user)
-
+        hosting = create_hosting(host)
         hosting_review = create_hosting_review(user, host, hosting)
 
+        self.assertEqual(hosting_review.author, user)
+        self.assertEqual(hosting_review.host, host)
+        self.assertEqual(hosting_review.hosting, hosting)
         self.assertEqual(hosting_review.text, '')
+        #self.assertEqual(hosting_review.recommend, True)
+
+
+class PhotoModelTest(TestCase):
+    def test_saving_and_retrieving_photo(self):
+        host = create_user(HOST_EMAIL, HOST_PASSWORD)
+        hosting = create_hosting(host)
+        photo = create_photo(hosting, IMAGE, PHOTO_NAME)
+
+        self.assertEqual(photo.place, hosting)
+        self.assertEqual(photo.name, PHOTO_NAME)
+        self.assertEqual(photo.image, IMAGE)
+        self.assertEqual(photo.type, 5)
