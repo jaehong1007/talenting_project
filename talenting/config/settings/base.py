@@ -12,19 +12,19 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import json
 import os
 
-# Basic Paths
+# Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-TEMPLATE_DIR = os.path.join(ROOT_DIR, 'templates')
 
 # Config Paths
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
+CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
 
-config_secret_common = json.loads(open(
-    CONFIG_SECRET_COMMON_FILE).read())
+config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
 
+# Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
 # Static Paths
@@ -38,7 +38,8 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
 MEDIA_URL = '/media/'
 
-# Allowed hosts
+DEBUG = True
+
 ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     'localhost',
@@ -74,11 +75,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# Template
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            TEMPLATE_DIR
+            TEMPLATES_DIR
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -94,7 +97,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Database
+# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
 # Password validation
+# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
+
+# Custom User
+AUTH_USER_MODEL = 'member.User'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -110,14 +128,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'member.User'
+# 이메일 관련
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'talenting2@gmail.com'
+EMAIL_HOST_PASSWORD = 'xkffpsxldqordpsem'
+EMAIL_PORT = 587
+
 
 # Internationalization
+# https://docs.djangoproject.com/en/1.11/topics/i18n/
 LANGUAGE_CODE = 'ko-kr'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-DEBUG = True
 
