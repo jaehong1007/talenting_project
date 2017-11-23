@@ -12,12 +12,12 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import json
 import os
 from django.contrib.auth import password_validation
+
 password_validation
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-TEMPLATE_DIR = os.path.join(ROOT_DIR, 'templates')
 
 # Config Paths
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
@@ -76,11 +76,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+#Template
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            TEMPLATE_DIR
+            TEMPLATES_DIR
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -96,7 +98,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -107,11 +108,10 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
-#Custom User
+# Custom User
 AUTH_USER_MODEL = 'member.User'
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -129,10 +129,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# 이메일 관련
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'talenting2@gmail.com'
+EMAIL_PORT = 587
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
-
 LANGUAGE_CODE = 'ko-kr'
 
 TIME_ZONE = 'UTC'
@@ -146,4 +151,3 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-

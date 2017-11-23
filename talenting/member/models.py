@@ -19,9 +19,11 @@ class MyUserManager(BaseUserManager):
             email=email,
             password=password,
         )
-        user.is_admin =True
+        user.is_active = True
+        user.is_admin = True
         user.save(using=self.db)
         return user
+
 
 class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
@@ -34,7 +36,6 @@ class User(AbstractBaseUser):
     is_host = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
     USERNAME_FIELD = 'email'
 
@@ -59,3 +60,5 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+class GuestReview
