@@ -40,3 +40,11 @@ INTERNET_TYPES = [
 CAPACITIES = n_tuple(10)
 MIN_STAY = n_tuple(90)
 MAX_STAY = n_tuple(60, first=[(0, 'Unlimited')])
+
+PHOTO_TYPES = [
+    (1, 'Inside of the house'),
+    (2, 'View of the house'),
+    (3, 'External look of the house'),
+    (4, 'Around the house'),
+    (5, 'Other'),
+]

@@ -35,6 +35,9 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+
 
 class HostingReview(models.Model):
     author = models.ForeignKey(User, related_name='who_reviews')
@@ -42,3 +45,17 @@ class HostingReview(models.Model):
     hosting = models.ForeignKey(Hosting, related_name='where_is_reviewed')
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.author
+
+
+class Photo(models.Model):
+    place = models.ForeignKey(Hosting, blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='hosting')
+    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=5)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
