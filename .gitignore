@@ -1,5 +1,6 @@
 ted by https://www.gitignore.io/api/macos,python,django,pycharm
 
+
 ### Django ###
 *.log
 *.pot
