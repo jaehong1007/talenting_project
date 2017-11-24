@@ -4,6 +4,7 @@ from django.db import models
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password):
+
         if not email:
             raise ValueError("User must have an email")
         if not password:
@@ -23,6 +24,7 @@ class MyUserManager(BaseUserManager):
         user.is_admin = True
 
         user.save(using=self.db)
+
         return user
 
 
@@ -35,6 +37,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=False)
 
     is_host = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
