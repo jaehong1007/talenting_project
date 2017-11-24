@@ -9,19 +9,24 @@ User = get_user_model()
 
 class WishListItems(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    wish_event = models.ForeignKey(settings.EVENT_ITEM_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='userself')
+    wish_event = models.ForeignKey(settings.EVENT_ITEM_MODEL, related_name='wish_event')
+    wish_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='wish_user')
+    notes = models.TextField(blank=True, null=True)
+    added_date = models.DateTimeField(auto_now_add=True)
+
     objects = UserManager()
 
     class Meta:
         verbose_name = 'wishlist'
         verbose_name_plural = f'{verbose_name} 목록'
         ordering = ['-created_at']
-        unique_together = ['user', 'wish_event']
+        unique_together = ['user', 'wish_event'], ['user','wish_user']
 
     def __str__(self):
         return f'event_wishlist (' \
-                f'{self.wish_event})'
+                f'{self.wish_event}, ' \
+                f'{self.wish_user})'
 
     def __unicode__(self):
         assert self.wish_event

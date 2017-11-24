@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Event
+from .models import Event, EventComment
 
 
 class EventForm(forms.ModelForm):
@@ -28,4 +28,20 @@ class EventForm(forms.ModelForm):
                 raise ValueError('Author field is required')
             self.instance.author = author
         return super().save(*args, **kwargs)
+
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = EventComment
+        fields = (
+            'content',
+        )
+        widgets = {
+            'content': forms.TextInput(
+                attrs={
+                    'class': 'form-control',
+                }
+            )
+        }
 

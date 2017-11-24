@@ -9,4 +9,5 @@ class WishListItemsForm(ModelForm):
         model = WishListItems
         fields = [
             'wish_event'
+            'user'
         ]

@@ -4,7 +4,6 @@ from .models import Event
 
 
 class EventSerializer(serializers.ModelSerializer):
-    # author = UserSerializer()
 
     class Meta:
         model = Event
