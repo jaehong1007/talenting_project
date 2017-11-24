@@ -47,4 +47,3 @@ class EventComment(models.Model):
 
     class Meta:
         ordering = ['created_at']
-

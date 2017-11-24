@@ -3,7 +3,7 @@ from django.db import models
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, password):
+    def create_user(self, email, password, first_name, last_name):
 
         if not email:
             raise ValueError("User must have an email")
@@ -15,10 +15,12 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, password, first_name, last_name):
         user = self.create_user(
             email=email,
             password=password,
+            first_name=first_name,
+            last_name=last_name,
         )
         user.is_active = True
         user.is_admin = True
@@ -30,18 +32,14 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
-    first_name = models.CharField(max_length=120, blank=True, null=True)
-    last_name = models.CharField(max_length=100, blank=True, null=True)
+    first_name = models.CharField(max_length=120)
+    last_name = models.CharField(max_length=100)
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 
-    is_host = models.BooleanField(default=False)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = MyUserManager()
 
@@ -83,6 +81,7 @@ class User(AbstractBaseUser):
     def get_guest_review_by_hosts(self):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
+
 
 class GuestReview(models.Model):
     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''

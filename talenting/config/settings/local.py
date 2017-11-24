@@ -6,5 +6,3 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     '.yabi.kr',
 ]
-
-DATABASES = config_secret_common['django']['databases']

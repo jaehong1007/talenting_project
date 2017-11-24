@@ -45,6 +45,9 @@ class Photo(models.Model):
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=5)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Description(models.Model):
     place = models.ForeignKey(Hosting)
@@ -58,11 +61,17 @@ class Description(models.Model):
 
 class HostingReview(models.Model):
     author = models.ForeignKey(User, related_name='who_reviews')
-    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.CASCADE)
+    host = models.ForeignKey(User, related_name='who_is_reviewed')
     place = models.ForeignKey(Hosting, related_name='where_is_reviewed')
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Author: {self.author.first_name}'
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class LocationInfo(models.Model):
@@ -71,4 +80,4 @@ class LocationInfo(models.Model):
     neighborhood = models.TextField()
 
     def __str__(self):
-        return self.place.title
+        return f'Place: {self.place.title}'
