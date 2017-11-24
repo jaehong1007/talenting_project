@@ -3,7 +3,7 @@ from django.core.files import File
 from django.test import TestCase
 
 from member.models import User
-from post.models import Description
+from hosting.models import Description
 from .models import Hosting, HostingReview, Photo
 
 USER_EMAIL = 'user@gmail.com'
