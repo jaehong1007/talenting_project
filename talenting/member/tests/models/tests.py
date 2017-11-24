@@ -1,9 +1,16 @@
 from django.test import TestCase
 from ...models import User
+import random
 
+ALPHABET_FOR_TEST = 'abcdefghijklmnopqrstuvwxyz'
+
+def rand_name(len, char):
+    return "".join([random.choice(char) for _ in range(len)])
 
 def make_host(email, password):
-    user = User.objects.create_user(email=email, password=password)
+    user = User.objects.create_user(email=email, password=password,
+                                    first_name=rand_name(5, ALPHABET_FOR_TEST),
+                                    last_name=rand_name(5, ALPHABET_FOR_TEST))
     user.is_host = True
     user.is_active = True
     user.save()
@@ -11,7 +18,11 @@ def make_host(email, password):
 
 
 def make_guest(email, password):
-    user = User.objects.create_user(email=email, password=password)
+    user = User.objects.create_user(email=email, password=password,
+                                    first_name=rand_name(5, ALPHABET_FOR_TEST),
+                                    last_name=rand_name(5, ALPHABET_FOR_TEST))
+    user.first_name = rand_name(5, ALPHABET_FOR_TEST)
+    user.last_name = rand_name(5, ALPHABET_FOR_TEST)
     user.is_active = True
     user.save()
     return user
@@ -22,11 +33,15 @@ class UserModelTest(TestCase):
         first_user = User()
         first_user.email = 'sejun12@gmail.com'
         first_user.password = 'ab33591242'
+        first_user.first_name = rand_name(5, ALPHABET_FOR_TEST)
+        first_user.last_name = rand_name(5, ALPHABET_FOR_TEST)
         first_user.save()
 
         second_user = User()
         second_user.email = 'sejun13@gmail.com'
         second_user.password = 'ab33591242'
+        first_user.first_name = rand_name(5, ALPHABET_FOR_TEST)
+        first_user.last_name = rand_name(5, ALPHABET_FOR_TEST)
         second_user.save()
 
         saved_users = User.objects.all()
@@ -38,8 +53,12 @@ class UserModelTest(TestCase):
         self.assertEqual(second_saved_user.email, 'sejun13@gmail.com')
 
     def test_custom_method_operations(self):
-        superuser = User.objects.create_superuser(email='superuser@gmail.com', password='ab33591242')
-        normal = User.objects.create_user(email='normal@gmail.com', password='ab33591242')
+        superuser = User.objects.create_superuser(email='superuser@gmail.com', password='ab33591242',
+                                                  first_name=rand_name(5, ALPHABET_FOR_TEST),
+                                                  last_name=rand_name(5, ALPHABET_FOR_TEST))
+        normal = User.objects.create_user(email='normal@gmail.com', password='ab33591242',
+                                          first_name=rand_name(5, ALPHABET_FOR_TEST),
+                                          last_name=rand_name(5, ALPHABET_FOR_TEST))
 
         self.assertEqual(superuser, User.objects.get(email='superuser@gmail.com'))
         self.assertEqual(normal, User.objects.get(email='normal@gmail.com'))
@@ -70,10 +89,17 @@ class GuestReviewModelTest(TestCase):
         youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', rating=4)
 
         sejun_reviews = sejun.get_guest_review_by_hosts()
-        print(sejun_reviews)
         self.assertEqual(len(sejun_reviews), 2)
         review_messages = ['세준씨는 좋은 사람입니다2', '세준씨는 좋은 사람입니다']
         for index, review in enumerate(sejun_reviews):
             self.assertEqual(review.review, review_messages[index])
+
+    def test_guest_has_a_average_rating(self):
+        jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
+        youngchan = make_host(email='youngchan@gmail.com', password='ab33591242')
+        sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
+        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
+        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', rating=4)
+        self.assertEqual(sejun.get_user_average_rating(), 4.0)
 
 

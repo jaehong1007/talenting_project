@@ -1,8 +1,9 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 
+
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, password):
+    def create_user(self, email, password, first_name, last_name):
         if not email:
             raise ValueError("User must have an email")
         if not password:
@@ -10,14 +11,14 @@ class MyUserManager(BaseUserManager):
 
         user = self.model(email=self.normalize_email(email))
         user.set_password(password)
+        user.first_name = first_name
+        user.last_name = last_name
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
-        user = self.create_user(
-            email=email,
-            password=password,
-        )
+    def create_superuser(self, email, password, first_name, last_name):
+        user = self.create_user(email=email, password=password,
+                                first_name=first_name, last_name=last_name)
         user.is_active = True
         user.is_admin = True
         user.save(using=self.db)
@@ -26,8 +27,8 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
-    first_name = models.CharField(max_length=120, blank=True, null=True)
-    last_name = models.CharField(max_length=100, blank=True, null=True)
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
@@ -80,11 +81,14 @@ class User(AbstractBaseUser):
         return self.user_review_about_guest.filter(guest=self)
 
     def get_user_average_rating(self):
+        '''유저 레이팅의 평균을 소수점으로 반환'''
         user_reviews = self.user_review_about_guest.filter(guest=self)
         if user_reviews:
             user_ratings = [review.rating for review in user_reviews]
+            return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
+        return float(0)
 
-        return str(0)
+
 class GuestReview(models.Model):
     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
     host = models.ForeignKey(User, related_name='user_review_by_host')
