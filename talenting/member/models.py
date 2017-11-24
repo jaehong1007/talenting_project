@@ -62,14 +62,33 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-# class GuestReview(models.Model):
-#     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
-#     host = models.ForeignKey(User, related_name='user_review_by_host')
-#     guest = models.ForeignKey(User, related_name='user_review_about_guest')
-#     review = models.TextField()
-#     rating = models.PositiveSmallIntegerField()
-#     active = models.BooleanField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-#
-#     class Meta:
-#         ordering = ['-created_at']
+    def write_review_to_guest(self, guest_pk, review, rating):
+        '''
+        :param guest_pk: 호스트 권한을 가진 유저가 게스트에게 리뷰를 남기는 메소드.
+        :return: 리뷰가 새로 생성되었으면 True, 아니면 False
+        '''
+        if self.is_host and not self.user_review_about_guest.filter(host=self).exists():
+            GuestReview.objects.create(
+                host=self,
+                guest=User.objects.get(pk=guest_pk),
+                review=review,
+                rating=rating
+            )
+            return True
+        return False
+
+    def get_guest_review_by_hosts(self):
+        '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
+        return self.user_review_about_guest.filter(guest=self)
+
+class GuestReview(models.Model):
+    '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
+    host = models.ForeignKey(User, related_name='user_review_by_host')
+    guest = models.ForeignKey(User, related_name='user_review_about_guest')
+    review = models.TextField()
+    rating = models.PositiveSmallIntegerField()
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
