@@ -17,7 +17,6 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
-CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
 
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
 
@@ -57,10 +56,10 @@ INSTALLED_APPS = [
     'django_extensions',
 
     'member',
+    'hosting',
     'event',
     'wishlist',
     'corsheaders',
-
 ]
 
 MIDDLEWARE = [
@@ -97,24 +96,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-# Password validation
-# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
-
 # Custom User
 AUTH_USER_MODEL = 'member.User'
 EVENT_ITEM_MODEL = 'event.Event'
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -131,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# 이메일 관련
+# Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
@@ -140,10 +124,8 @@ EMAIL_HOST_PASSWORD = 'xkffpsxldqordpsem'
 EMAIL_PORT = 587
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
 LANGUAGE_CODE = 'ko-kr'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
