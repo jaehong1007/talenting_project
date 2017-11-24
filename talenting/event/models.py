@@ -31,7 +31,7 @@ class Event(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'Evenet (PK: {self.pk})'
+        return f'Event (PK: {self.pk})'
 
 
 class EventComment(models.Model):

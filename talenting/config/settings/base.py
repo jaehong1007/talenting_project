@@ -113,6 +113,8 @@ DATABASES = {
 
 # Custom User
 AUTH_USER_MODEL = 'member.User'
+EVENT_ITEM_MODEL = 'event.Event'
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
