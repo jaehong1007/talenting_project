@@ -45,9 +45,6 @@ class Photo(models.Model):
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=5)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.name
-
 
 class Description(models.Model):
     place = models.ForeignKey(Hosting)
@@ -67,9 +64,6 @@ class HostingReview(models.Model):
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.author
-
 
 class LocationInfo(models.Model):
     place = models.ForeignKey(Hosting)
@@ -77,4 +71,4 @@ class LocationInfo(models.Model):
     neighborhood = models.TextField()
 
     def __str__(self):
-        return self.place
+        return self.place.title

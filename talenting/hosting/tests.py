@@ -57,8 +57,8 @@ def create_description(hosting):
 class HostingModelTest(TestCase):
     def test_saving_and_retrieving_hosting(self):
         user = create_user(USER_EMAIL, USER_PASSWORD)
-
         hosting = create_hosting(user)
+
         self.assertEqual(hosting.owner, user)
         self.assertEqual(hosting.title, '')
         self.assertEqual(hosting.rules, None)
