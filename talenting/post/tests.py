@@ -3,6 +3,7 @@ from django.core.files import File
 from django.test import TestCase
 
 from member.models import User
+from post.models import Description
 from .models import Hosting, HostingReview, Photo
 
 USER_EMAIL = 'user@gmail.com'
@@ -46,6 +47,13 @@ def create_photo(hosting, image, name):
     return photo
 
 
+def create_description(hosting):
+    description = Description.objects.create(
+        place=hosting,
+    )
+    return description
+
+
 class HostingModelTest(TestCase):
     def test_saving_and_retrieving_hosting(self):
         user = create_user(USER_EMAIL, USER_PASSWORD)
@@ -53,8 +61,6 @@ class HostingModelTest(TestCase):
         hosting = create_hosting(user)
         self.assertEqual(hosting.owner, user)
         self.assertEqual(hosting.title, '')
-        self.assertEqual(hosting.description, '')
-        self.assertEqual(hosting.to_do, '')
         self.assertEqual(hosting.rules, None)
         self.assertEqual(hosting.primary_photo, None)
         self.assertEqual(hosting.category, 1)
@@ -99,3 +105,15 @@ class PhotoModelTest(TestCase):
         self.assertEqual(photo.name, PHOTO_NAME)
         self.assertEqual(photo.image, IMAGE)
         self.assertEqual(photo.type, 5)
+
+
+class DescriptionModelTest(TestCase):
+    def test_saving_and_retrieving_description(self):
+        host = create_user(HOST_EMAIL, HOST_PASSWORD)
+        hosting = create_hosting(host)
+        description = create_description(hosting)
+
+        self.assertEqual(description.place, hosting)
+        self.assertEqual(description.title, '')
+        self.assertEqual(description.description, '')
+        self.assertEqual(description.to_do, '')
