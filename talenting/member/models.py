@@ -81,6 +81,7 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
+
 class GuestReview(models.Model):
     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
     host = models.ForeignKey(User, related_name='user_review_by_host')
