@@ -7,5 +7,6 @@ ALLOWED_HOSTS = [
     '.yabi.kr',
 ]
 
+
 DATABASES = config_secret_common['django']['databases']
 SECRET_KEY = config_secret_common['django']['secret_key']
