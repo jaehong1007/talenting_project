@@ -55,9 +55,25 @@ class GuestReviewModelTest(TestCase):
         jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
         sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
         is_review_created = jaehong.write_review_to_guest(
-            guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다',rating=4)
+            guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
         self.assertTrue(is_review_created)
 
         sejun_review = sejun.get_guest_review_by_hosts()[0]
         self.assertEqual(sejun_review.host, jaehong)
         self.assertEqual(sejun_review.review, '세준씨는 좋은 사람입니다')
+
+    def test_guest_review_can_show_multiple_reviews_in_descending_order_by_created_date(self):
+        jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
+        youngchan = make_host(email='youngchan@gmail.com', password='ab33591242')
+        sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
+        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
+        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', rating=4)
+
+        sejun_reviews = sejun.get_guest_review_by_hosts()
+        print(sejun_reviews)
+        self.assertEqual(len(sejun_reviews), 2)
+        review_messages = ['세준씨는 좋은 사람입니다2', '세준씨는 좋은 사람입니다']
+        for index, review in enumerate(sejun_reviews):
+            self.assertEqual(review.review, review_messages[index])
+
+
