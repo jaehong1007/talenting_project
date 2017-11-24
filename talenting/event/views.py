@@ -3,13 +3,13 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-from .forms import EventForm
+from .forms import EventForm, CommentForm
 from .models import Event
 
 
 def event_list(request):
     events = Event.objects.all()
-    # comment_form = CommentForm()
+    comment_form = CommentForm()
     context = {
         'events': events,
         'comment_form': comment_form,
