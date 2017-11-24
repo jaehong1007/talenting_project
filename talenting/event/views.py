@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-from post.forms import EventForm
-from post.models import Event
+from .forms import EventForm
+from .models import Event
 
 
 def event_list(request):
@@ -41,3 +43,16 @@ def event_detail(request, event_pk):
         'event': event,
     }
     return render(request, context)
+
+
+@login_required
+def event_delete(request, event_pk):
+    if request.method == 'POST':
+        event = get_object_or_404(Event, pk=event_pk)
+        if event.author == request.user:
+            event.delete()
+            return HttpResponse('succeed')
+        else:
+            raise PermissionDenied('You have no permission to delete')
+
+

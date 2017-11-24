@@ -57,8 +57,10 @@ INSTALLED_APPS = [
     'django_extensions',
 
     'member',
-    'post',
+    'event',
+    'wishlist',
     'corsheaders',
+
 ]
 
 MIDDLEWARE = [

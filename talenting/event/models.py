@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from post.countries import COUNTRIES
+from .countries import COUNTRIES
 
 
 class EventManager(models.Manager):
@@ -11,7 +11,7 @@ class EventManager(models.Manager):
 
 
 class Event(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, default=1)
     title = models.CharField(max_length=20)
     program = models.TextField(max_length=300, blank=True)
     noted_item = models.TextField(max_length=100, blank=True, null=True)
@@ -19,12 +19,12 @@ class Event(models.Model):
     state = models.CharField(_('State/Region'), max_length=40, null=True, blank=True)
     city = models.CharField(_('City'), max_length=40)
     price = models.DecimalField(_('Price per person'), decimal_places=2, max_digits=6, blank=True, null=True)
-    photo = models.ImageField(upload_to='post')
+    photo = models.ImageField(upload_to='event')
     starting_date = models.DateTimeField(null=True)
     closing_date = models.DateTimeField(null=True)
-    maximum_participant = models.IntegerField(blank=True, null=True)
+    maximum_participant = models.IntegerField(blank=True, null=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
     objects = EventManager()
 
     class Meta:
