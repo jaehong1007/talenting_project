@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 
-
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password):
         if not email:
@@ -80,6 +79,12 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
+    def get_user_average_rating(self):
+        user_reviews = self.user_review_about_guest.filter(guest=self)
+        if user_reviews:
+            user_ratings = [review.rating for review in user_reviews]
+
+        return str(0)
 class GuestReview(models.Model):
     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
     host = models.ForeignKey(User, related_name='user_review_by_host')
