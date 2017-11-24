@@ -62,10 +62,19 @@ class Description(models.Model):
 class HostingReview(models.Model):
     author = models.ForeignKey(User, related_name='who_reviews')
     host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.CASCADE)
-    hosting = models.ForeignKey(Hosting, related_name='where_is_reviewed')
-    text = models.TextField()
+    place = models.ForeignKey(Hosting, related_name='where_is_reviewed')
+    review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.author
+
+
+class LocationInfo(models.Model):
+    place = models.ForeignKey(Hosting)
+    description = models.TextField()
+    neighborhood = models.TextField()
+
+    def __str__(self):
+        return self.place

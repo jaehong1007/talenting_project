@@ -33,7 +33,7 @@ def create_hosting_review(user, host, hosting):
     hosting_review = HostingReview.objects.create(
         author=user,
         host=host,
-        hosting=hosting,
+        place=hosting,
     )
     return hosting_review
 
@@ -90,8 +90,8 @@ class HostingReviewModelTest(TestCase):
 
         self.assertEqual(hosting_review.author, user)
         self.assertEqual(hosting_review.host, host)
-        self.assertEqual(hosting_review.hosting, hosting)
-        self.assertEqual(hosting_review.text, '')
+        self.assertEqual(hosting_review.place, hosting)
+        self.assertEqual(hosting_review.review, '')
         self.assertEqual(hosting_review.recommend, True)
 
 
