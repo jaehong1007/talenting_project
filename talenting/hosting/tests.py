@@ -58,7 +58,6 @@ class HostingModelTest(TestCase):
 
         self.assertEqual(hosting.owner, user)
         self.assertEqual(hosting.title, '')
-        self.assertEqual(hosting.rules, None)
         self.assertEqual(hosting.primary_photo, None)
         self.assertEqual(hosting.category, 1)
         self.assertEqual(hosting.house_type, 1)
@@ -67,13 +66,15 @@ class HostingModelTest(TestCase):
         self.assertEqual(hosting.meal_type, 1)
         self.assertEqual(hosting.internet, 1)
         self.assertEqual(hosting.language, '')
+        self.assertEqual(hosting.rules, '')
         self.assertEqual(hosting.min_stay, 1)
         self.assertEqual(hosting.max_stay, 1)
         self.assertEqual(hosting.country, '')
         self.assertEqual(hosting.city, '')
         self.assertEqual(hosting.distinct, '')
         self.assertEqual(hosting.street, '')
-        self.assertEqual(hosting.address, None)
+        self.assertEqual(hosting.address, '')
+        self.assertEqual(hosting.postcode, '')
         self.assertEqual(hosting.active, True)
         self.assertEqual(hosting.published, False)
 
@@ -101,7 +102,7 @@ class PhotoModelTest(TestCase):
         self.assertEqual(photo.place, hosting)
         self.assertEqual(photo.name, PHOTO_NAME)
         self.assertEqual(photo.image, IMAGE)
-        self.assertEqual(photo.type, 5)
+        self.assertEqual(photo.type, 1)
 
 
 class DescriptionModelTest(TestCase):

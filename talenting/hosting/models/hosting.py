@@ -7,10 +7,10 @@ User = settings.AUTH_USER_MODEL
 
 
 class Hosting(models.Model):
-    owner = models.ForeignKey(User)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=100)
-    summary = models.TextField(default='')
+    summary = models.TextField()
     primary_photo = models.ImageField(upload_to='hosting', blank=True, null=True)
 
     house_type = models.SmallIntegerField(choices=HOUSE_TYPES, default=1)
@@ -19,7 +19,7 @@ class Hosting(models.Model):
     meal_type = models.SmallIntegerField(choices=MEAL_TYPES, default=1)
     internet = models.SmallIntegerField(choices=INTERNET_TYPES, default=1)
     language = models.CharField(max_length=5, choices=LANGUAGES)
-    rules = models.TextField(blank=True, null=True)
+    rules = models.TextField(blank=True)
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
@@ -27,7 +27,8 @@ class Hosting(models.Model):
     city = models.CharField(max_length=10)
     distinct = models.CharField(max_length=40)
     street = models.CharField(max_length=60)
-    address = models.CharField(max_length=100, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True)
+    postcode = models.CharField(max_length=10, blank=True)
 
     active = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
@@ -39,10 +40,10 @@ class Hosting(models.Model):
 
 
 class Photo(models.Model):
-    place = models.ForeignKey(Hosting, blank=True, null=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, blank=True)
     image = models.ImageField(upload_to='hosting')
-    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=5)
+    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,7 +51,7 @@ class Photo(models.Model):
 
 
 class Description(models.Model):
-    place = models.ForeignKey(Hosting)
+    place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField()
     to_do = models.TextField()
@@ -60,9 +61,9 @@ class Description(models.Model):
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, related_name='who_reviews')
-    host = models.ForeignKey(User, related_name='who_is_reviewed')
-    place = models.ForeignKey(Hosting, related_name='where_is_reviewed')
+    author = models.ForeignKey(User, related_name='who_reviews', on_delete=models.PROTECT)
+    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.PROTECT)
+    place = models.ForeignKey(Hosting, related_name='where_is_reviewed', on_delete=models.PROTECT)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,9 +76,9 @@ class HostingReview(models.Model):
 
 
 class LocationInfo(models.Model):
-    place = models.ForeignKey(Hosting)
+    place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
     description = models.TextField()
-    neighborhood = models.TextField()
+    neighborhood = models.TextField(blank=True)
 
     def __str__(self):
         return f'Place: {self.place.title}'
