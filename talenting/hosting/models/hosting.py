@@ -35,6 +35,12 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_primary_photo(self):
+        photos = self.photo_set.all()
+        if photos:
+            self.primary_photo = photos[0].image
+            self.save()
+
     def __str__(self):
         return self.title
 
@@ -79,6 +85,8 @@ class LocationInfo(models.Model):
     place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
     description = models.TextField()
     neighborhood = models.TextField(blank=True)
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     def __str__(self):
         return f'Place: {self.place.title}'
