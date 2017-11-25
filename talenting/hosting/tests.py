@@ -1,5 +1,6 @@
 import io
 import unittest
+from random import randint
 
 from django.core.files import File
 
@@ -81,3 +82,33 @@ class HostingModelTest(unittest.TestCase):
         self.assertEqual(location_info.place, self.hosting)
         self.assertEqual(location_info.description, '')
         self.assertEqual(location_info.neighborhood, '')
+
+
+class HostingMethodTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(
+            email='user@gmail.com',
+            password='password',
+            first_name='Namwoo',
+            last_name='Seo',
+        )
+        cls.host = User.objects.create_user(
+            email='host@gmail.com',
+            password='password',
+            first_name='Andreea',
+            last_name='Sorian',
+        )
+        cls.hosting = Hosting.objects.create(owner=cls.host)
+
+    def test_get_primary_photo_method(self):
+        num = randint(0, 10)
+        for i in range(num):
+            Photo.objects.create(place=self.hosting)
+        photos = self.hosting.photo_set.all()
+        self.assertEqual(photos.count(), num)
+
+        self.hosting.get_primary_photo()
+
+        self.assertEqual(self.hosting.primary_photo, photos[0].image)
+
