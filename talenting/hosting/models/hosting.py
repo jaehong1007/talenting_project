@@ -7,22 +7,27 @@ User = settings.AUTH_USER_MODEL
 
 
 class Hosting(models.Model):
+    # Representation
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
-    title = models.CharField(max_length=100)
-    summary = models.TextField()
-    primary_photo = models.ImageField(upload_to='hosting', blank=True, null=True)
+    title = models.CharField(max_length=50)
+    summary = models.TextField(max_length=500)
+    primary_photo = models.ImageField(upload_to='hosting', blank=True)
 
+    # House
     house_type = models.SmallIntegerField(choices=HOUSE_TYPES, default=1)
     room_type = models.SmallIntegerField(choices=ROOM_TYPES, default=1)
-    capacity = models.SmallIntegerField(choices=CAPACITIES, default=1)
     meal_type = models.SmallIntegerField(choices=MEAL_TYPES, default=1)
+    capacity = models.SmallIntegerField(choices=CAPACITIES, default=1)
     internet = models.SmallIntegerField(choices=INTERNET_TYPES, default=1)
-    language = models.CharField(max_length=5, choices=LANGUAGES)
+    smoking = models.NullBooleanField()
+    pet = models.NullBooleanField()
     rules = models.TextField(blank=True)
+    language = models.CharField(max_length=5, choices=LANGUAGES)
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
+    # Address
     country = models.CharField(max_length=2, choices=COUNTRIES)
     city = models.CharField(max_length=10)
     distinct = models.CharField(max_length=40)
@@ -30,6 +35,7 @@ class Hosting(models.Model):
     address = models.CharField(max_length=100, blank=True)
     postcode = models.CharField(max_length=10, blank=True)
 
+    # Timestamp/Status
     active = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
