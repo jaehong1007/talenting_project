@@ -53,29 +53,31 @@ class Hosting(models.Model):
 
 class Photo(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, blank=True)
     image = models.ImageField(upload_to='hosting')
+    caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return f'Photo: {self.caption}({self.type})'
 
 
 class Description(models.Model):
     place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    to_do = models.TextField()
+    description = models.TextField(blank=True)
+    to_do = models.TextField(blank=True)
+    exchange = models.TextField(blank=True)
+    neighborhood = models.TextField(blank=True)
+    transportation = models.TextField(blank=True)
 
     def __str__(self):
-        return self.title
+        return f'Description: {self.place.title}'
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, related_name='who_reviews', on_delete=models.PROTECT)
-    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.PROTECT)
-    place = models.ForeignKey(Hosting, related_name='where_is_reviewed', on_delete=models.PROTECT)
+    author = models.ForeignKey(User, related_name='who_reviews', on_delete=models.SET_NULL)
+    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.SET_NULL)
+    place = models.ForeignKey(Hosting, related_name='where_is_reviewed', on_delete=models.SET_NULL)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -87,12 +89,10 @@ class HostingReview(models.Model):
         ordering = ['-created_at']
 
 
-class LocationInfo(models.Model):
+class GeoLocation(models.Model):
     place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
-    description = models.TextField()
-    neighborhood = models.TextField(blank=True)
-    lat = models.FloatField(default=0.0)
-    lon = models.FloatField(default=0.0)
+    lat = models.FloatField()
+    lon = models.FloatField()
 
     def __str__(self):
-        return f'Place: {self.place.title}'
+        return f'Location: {self.place.title}'
