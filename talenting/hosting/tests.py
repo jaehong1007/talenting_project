@@ -5,7 +5,7 @@ from random import randint
 from django.core.files import File
 
 from member.models import User
-from .models import Hosting, HostingReview, Photo, Description, LocationInfo
+from .models import Hosting, HostingReview, Photo, Description, GeoLocation
 
 
 class HostingModelTest(unittest.TestCase):
@@ -28,7 +28,7 @@ class HostingModelTest(unittest.TestCase):
     def test_saving_and_retrieving_hosting(self):
         self.assertEqual(self.hosting.owner, self.host)
         self.assertEqual(self.hosting.title, '')
-        self.assertEqual(self.hosting.primary_photo, None)
+        self.assertEqual(self.hosting.primary_photo, '')
         self.assertEqual(self.hosting.category, 1)
         self.assertEqual(self.hosting.house_type, 1)
         self.assertEqual(self.hosting.room_type, 1)
@@ -59,12 +59,12 @@ class HostingModelTest(unittest.TestCase):
 
     def test_saving_and_retrieving_photo(self):
         image = File(io.BytesIO())
-        photo_name = 'My house'
+        caption = 'My house'
 
-        photo = Photo(place=self.hosting, image=image, name=photo_name)
+        photo = Photo(place=self.hosting, image=image, caption=caption)
 
         self.assertEqual(photo.place, self.hosting)
-        self.assertEqual(photo.name, photo_name)
+        self.assertEqual(photo.caption, caption)
         self.assertEqual(photo.image, image)
         self.assertEqual(photo.type, 1)
 
@@ -72,16 +72,18 @@ class HostingModelTest(unittest.TestCase):
         description = Description(place=self.hosting)
 
         self.assertEqual(description.place, self.hosting)
-        self.assertEqual(description.title, '')
         self.assertEqual(description.description, '')
         self.assertEqual(description.to_do, '')
+        self.assertEqual(description.exchange, '')
+        self.assertEqual(description.neighborhood, '')
+        self.assertEqual(description.transportation, '')
 
     def test_saving_and_retrieving_location_info(self):
-        location_info = LocationInfo(place=self.hosting)
+        location_info = GeoLocation(place=self.hosting)
 
         self.assertEqual(location_info.place, self.hosting)
-        self.assertEqual(location_info.description, '')
-        self.assertEqual(location_info.neighborhood, '')
+        self.assertEqual(location_info.lat, None)
+        self.assertEqual(location_info.lon, None)
 
 
 class HostingMethodTest(unittest.TestCase):
@@ -112,3 +114,10 @@ class HostingMethodTest(unittest.TestCase):
 
         self.assertEqual(self.hosting.primary_photo, photos[0].image)
 
+    def test_get_hosting_review_method(self):
+        num = randint(0, 10)
+        for i in range(num):
+            HostingReview.objects.create(author=self.user, host=self.host, place=self.hosting)
+        reviews = self.hosting.get_hosting_reviews()
+
+        self.assertEqual(reviews.count(), num)

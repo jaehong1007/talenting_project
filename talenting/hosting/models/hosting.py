@@ -47,6 +47,9 @@ class Hosting(models.Model):
             self.primary_photo = photos[0].image
             self.save()
 
+    def get_hosting_reviews(self):
+        return self.hostingreview_set.all()
+
     def __str__(self):
         return self.title
 
@@ -75,9 +78,9 @@ class Description(models.Model):
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, related_name='who_reviews', on_delete=models.SET_NULL)
-    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.SET_NULL)
-    place = models.ForeignKey(Hosting, related_name='where_is_reviewed', on_delete=models.SET_NULL)
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
+    host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
