@@ -48,6 +48,7 @@ class Hosting(models.Model):
     lon = models.FloatField(default=0.0)
 
     # Timestamp/Status
+    has_photo = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -60,6 +61,7 @@ class Hosting(models.Model):
         photos = self.photo_set.all()
         if photos:
             self.primary_photo = photos[0].image
+            self.has_photo = True
             self.save()
 
     def get_hosting_reviews(self):
@@ -74,11 +76,11 @@ class Hosting(models.Model):
         self.recommend_counter = count
         self.save()
 
-
-        # def get_host_reviews(self):
-
         # def create_thumbnails(self):
         #     if self.primary_photo:
+
+    class Meta:
+        ordering = ['-has_photo', '-recommend_counter']
 
 
 class Photo(models.Model):

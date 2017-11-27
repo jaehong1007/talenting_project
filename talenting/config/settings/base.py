@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'storages',
     'rest_framework',
     'django_extensions',
+    'easy_thumbnails',
 
     'member',
     'hosting',
