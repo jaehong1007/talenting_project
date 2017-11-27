@@ -13,6 +13,7 @@ class Hosting(models.Model):
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
     primary_photo = models.ImageField(upload_to='hosting', blank=True)
+    recommend_counter = models.IntegerField(blank=True, null=True)
 
     # House
     house_type = models.SmallIntegerField(choices=HOUSE_TYPES, default=1)
@@ -43,8 +44,8 @@ class Hosting(models.Model):
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
-    lat = models.FloatField()
-    lon = models.FloatField()
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     # Timestamp/Status
     active = models.BooleanField(default=True)
@@ -63,6 +64,16 @@ class Hosting(models.Model):
 
     def get_hosting_reviews(self):
         return self.hostingreview_set.all()
+
+    def get_recommend_counter(self):
+        reviews = self.hostingreview_set.all()
+        count = 0
+        for rev in reviews:
+            if rev.recommend:
+                count += 1
+        self.recommend_counter = count
+        self.save()
+
 
         # def get_host_reviews(self):
 
