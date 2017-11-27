@@ -27,6 +27,13 @@ class Hosting(models.Model):
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
+    # Description
+    description = models.TextField(blank=True)
+    to_do = models.TextField(blank=True)
+    exchange = models.TextField(blank=True)
+    neighborhood = models.TextField(blank=True)
+    transportation = models.TextField(blank=True)
+
     # Address
     country = models.CharField(max_length=2, choices=COUNTRIES)
     city = models.CharField(max_length=10)
@@ -35,11 +42,18 @@ class Hosting(models.Model):
     address = models.CharField(max_length=100, blank=True)
     postcode = models.CharField(max_length=10, blank=True)
 
+    # Geolocation
+    lat = models.FloatField()
+    lon = models.FloatField()
+
     # Timestamp/Status
     active = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
     def get_primary_photo(self):
         photos = self.photo_set.all()
@@ -50,8 +64,10 @@ class Hosting(models.Model):
     def get_hosting_reviews(self):
         return self.hostingreview_set.all()
 
-    def __str__(self):
-        return self.title
+        # def get_host_reviews(self):
+
+        # def create_thumbnails(self):
+        #     if self.primary_photo:
 
 
 class Photo(models.Model):
@@ -63,18 +79,6 @@ class Photo(models.Model):
 
     def __str__(self):
         return f'Photo: {self.caption}({self.type})'
-
-
-class Description(models.Model):
-    place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
-    to_do = models.TextField(blank=True)
-    exchange = models.TextField(blank=True)
-    neighborhood = models.TextField(blank=True)
-    transportation = models.TextField(blank=True)
-
-    def __str__(self):
-        return f'Description: {self.place.title}'
 
 
 class HostingReview(models.Model):
@@ -90,12 +94,3 @@ class HostingReview(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
-
-class GeoLocation(models.Model):
-    place = models.OneToOneField(Hosting, on_delete=models.CASCADE)
-    lat = models.FloatField()
-    lon = models.FloatField()
-
-    def __str__(self):
-        return f'Location: {self.place.title}'
