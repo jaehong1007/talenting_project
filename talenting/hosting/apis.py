@@ -1,4 +1,6 @@
 from rest_framework import status, generics, permissions
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from utils.permissions import IsOwnerOrReadOnly
@@ -7,13 +9,21 @@ from .serializers import HostingSerializer
 from .models import Hosting
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class HostingList(generics.ListCreateAPIView):
     """
     List hosting post or create a new hosting post
     """
     queryset = Hosting.objects.all()
     serializer_class = HostingSerializer
+    # authentication_classes = (TokenAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
+    pagination_class = StandardResultsSetPagination
 
 
 class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -22,6 +32,7 @@ class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Hosting.objects.all()
     serializer_class = HostingSerializer
+    # authentication_classes = (TokenAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
 # class HostingList(APIView):

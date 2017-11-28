@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_extensions',
     'easy_thumbnails',
 
