@@ -9,3 +9,5 @@ class HostingSerializer(serializers.ModelSerializer):
         fields = (
             '__all__'
         )
+
+
