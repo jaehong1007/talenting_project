@@ -1,6 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
-
+from django.contrib.postgres.fields import ArrayField
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password, first_name, last_name):
@@ -22,23 +22,25 @@ class MyUserManager(BaseUserManager):
         user.is_active = True
         user.is_admin = True
 
-        user.save(using=self.db)
+        user.save(using=self._db)
 
         return user
 
 
 class User(AbstractBaseUser):
+    #기본 인증정보
     email = models.EmailField(max_length=255, unique=True)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-
+    #권한
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-
     is_host = models.BooleanField(default=False)
-
+    #TimeStamp
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    #유저의 추가정보
+    recommendations = models.IntegerField(default=0)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -67,16 +69,20 @@ class User(AbstractBaseUser):
 
     def write_review_to_guest(self, guest_pk, review, recommend):
         '''
-        :param guest_pk: 호스트 권한을 가진 유저가 게스트에게 리뷰를 남기는 메소드.
+        호스트 권한을 가진 유저가 게스트에게 리뷰를 남기는 메소드.
         :return: 리뷰가 새로 생성되었으면 True, 아니면 False
         '''
         if self.is_host and not self.user_review_about_guest.filter(host=self).exists():
+            guest = User.objects.get(pk=guest_pk)
             GuestReview.objects.create(
                 host=self,
-                guest=User.objects.get(pk=guest_pk),
+                guest=guest,
                 review=review,
                 recommend=recommend
             )
+            if recommend:
+                guest.recommendations += 1
+                guest.save()
             return True
         return False
 
@@ -91,20 +97,23 @@ class User(AbstractBaseUser):
     #         user_ratings = [review.rating for review in user_reviews]
     #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
     #     return float(0)
+    #
 
-    def get_number_of_recommendation_of_guest(self):
-        user_reviews = self.get_guest_review_by_hosts()
-        recommend_num = 0
-        for user_review in user_reviews:
-            if user_review.recommend:
-                recommend_num += 1
-        return recommend_num
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    self_intro = models.TextField()
+    my_talent = models.TextField()
+    city = models.CharField(max_length=20)
+    occupation = models.CharField(max_length=20)
+    available_languages = ArrayField(models.CharField(max_length=10))
+    profile_image = models.ImageField(upload_to='profile')
+
 
 
 class GuestReview(models.Model):
     '''호스트가 숙박한 게스트를 평가할 때 사용하는 모델'''
-    host = models.ForeignKey(User, related_name='user_review_by_host')
-    guest = models.ForeignKey(User, related_name='user_review_about_guest')
+    host = models.ForeignKey(User, related_name='user_review_by_host', on_delete=models.CASCADE)
+    guest = models.ForeignKey(User, related_name='user_review_about_guest', on_delete=models.CASCADE)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     active = models.BooleanField(default=True)
