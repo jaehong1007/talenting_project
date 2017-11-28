@@ -1,6 +1,7 @@
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from utils.permissions import IsOwnerOrReadOnly
 
 from .serializers import HostingSerializer
 from .models import Hosting
@@ -12,6 +13,7 @@ class HostingList(generics.ListCreateAPIView):
     """
     queryset = Hosting.objects.all()
     serializer_class = HostingSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
 
 class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -20,6 +22,7 @@ class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Hosting.objects.all()
     serializer_class = HostingSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
 # class HostingList(APIView):
 #     """
