@@ -1,6 +1,9 @@
+import os
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-from ...models import User
+from ...models import User, Profile
 import random
+from django.conf import settings
 
 ALPHABET_FOR_TEST = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -99,5 +102,14 @@ class GuestReviewModelTest(TestCase):
 class ProfileModelTest(TestCase):
     def test_user_has_a_profile(self):
         sejun = make_host(email='sejun@gmail.com', password='ab33591242')
+        path = os.path.join(settings.STATIC_DIR, 'test', 'sejun_profile.jpg')
+        photo = SimpleUploadedFile(name='test_image.jpg', content=open(path, 'rb').read(),
+                                   content_type='image/jpeg')
+        sejun_profile = Profile.objects.create(user=sejun, self_intro='나는 세준입니다', my_talent='영어 잘합니다',
+                               city='서울', occupation='학생', available_languages=['한국어', '영어'],
+                               profile_image=photo)
+        self.assertEqual(sejun_profile.user, sejun)
+        self.assertEqual(sejun_profile.available_languages, ['한국어', '영어'])
+        sejun_profile.profile_image.delete()
 
 
