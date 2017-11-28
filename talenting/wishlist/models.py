@@ -8,7 +8,7 @@ User = get_user_model()
 
 class WishListItems(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='userself')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='userself')
     wish_event = models.ForeignKey(settings.EVENT_ITEM_MODEL, related_name='wish_event')
     wish_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='wish_user')
     notes = models.TextField(blank=True, null=True)

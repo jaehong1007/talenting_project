@@ -74,7 +74,7 @@ class GuestReviewModelTest(TestCase):
         jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
         sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
         is_review_created = jaehong.write_review_to_guest(
-            guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
+            guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', recommend=True)
         self.assertTrue(is_review_created)
 
         sejun_review = sejun.get_guest_review_by_hosts()[0]
@@ -85,8 +85,8 @@ class GuestReviewModelTest(TestCase):
         jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
         youngchan = make_host(email='youngchan@gmail.com', password='ab33591242')
         sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
-        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
-        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', rating=4)
+        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', recommend=True)
+        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', recommend=True)
 
         sejun_reviews = sejun.get_guest_review_by_hosts()
         self.assertEqual(len(sejun_reviews), 2)
@@ -94,12 +94,12 @@ class GuestReviewModelTest(TestCase):
         for index, review in enumerate(sejun_reviews):
             self.assertEqual(review.review, review_messages[index])
 
-    def test_guest_has_a_average_rating(self):
+    def test_guest_has_recomendation_number(self):
         jaehong = make_host(email='jaehong@gmail.com', password='ab33591242')
         youngchan = make_host(email='youngchan@gmail.com', password='ab33591242')
         sejun = make_guest(email='sejun@gmail.com', password='ab33591242')
-        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', rating=4)
-        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', rating=4)
-        self.assertEqual(sejun.get_user_average_rating(), 4.0)
+        jaehong.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다', recommend=True)
+        youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', recommend=True)
+        self.assertEqual(sejun.get_number_of_recommendation_of_guest(), 2)
 
 

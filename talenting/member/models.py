@@ -41,6 +41,7 @@ class User(AbstractBaseUser):
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = MyUserManager()
 
@@ -64,7 +65,7 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-    def write_review_to_guest(self, guest_pk, review, rating):
+    def write_review_to_guest(self, guest_pk, review, recommend):
         '''
         :param guest_pk: 호스트 권한을 가진 유저가 게스트에게 리뷰를 남기는 메소드.
         :return: 리뷰가 새로 생성되었으면 True, 아니면 False
@@ -74,7 +75,7 @@ class User(AbstractBaseUser):
                 host=self,
                 guest=User.objects.get(pk=guest_pk),
                 review=review,
-                rating=rating
+                recommend=recommend
             )
             return True
         return False
@@ -83,13 +84,21 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-    def get_user_average_rating(self):
-        '''유저 레이팅의 평균을 소수점으로 반환'''
-        user_reviews = self.user_review_about_guest.filter(guest=self)
-        if user_reviews:
-            user_ratings = [review.rating for review in user_reviews]
-            return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
-        return float(0)
+    # def get_user_average_rating(self):
+    #     '''유저 레이팅의 평균을 소수점으로 반환'''
+    #     user_reviews = self.user_review_about_guest.filter(guest=self)
+    #     if user_reviews:
+    #         user_ratings = [review.rating for review in user_reviews]
+    #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
+    #     return float(0)
+
+    def get_number_of_recommendation_of_guest(self):
+        user_reviews = self.get_guest_review_by_hosts()
+        recommend_num = 0
+        for user_review in user_reviews:
+            if user_review.recommend:
+                recommend_num += 1
+        return recommend_num
 
 
 class GuestReview(models.Model):
@@ -97,7 +106,7 @@ class GuestReview(models.Model):
     host = models.ForeignKey(User, related_name='user_review_by_host')
     guest = models.ForeignKey(User, related_name='user_review_about_guest')
     review = models.TextField()
-    rating = models.PositiveSmallIntegerField()
+    recommend = models.BooleanField(default=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
