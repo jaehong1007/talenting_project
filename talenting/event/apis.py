@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from event.permissions import IsOwnerOrReadOnly
-from event.utils.pagination import EventPagination
+from .utils.pagination import EventPagination
+from .utils.permissions import IsOwnerOrReadOnly
 from member.serializer import UserSerializer
 from .serializer import EventSerializer
 from .models import Event
