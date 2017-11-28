@@ -3,6 +3,7 @@ from rest_framework.response import Response
 
 from event.permissions import IsOwnerOrReadOnly
 from event.utils.pagination import EventPagination
+from member.serializer import UserSerializer
 from .serializer import EventSerializer
 from .models import Event
 
@@ -40,6 +41,7 @@ class EventParticipateToggle(generics.GenericAPIView):
             instance.participants.add(user)
             participate_status = True
         data = {
+            'participant': UserSerializer(user).data,
             'event': EventSerializer(instance).data,
             'result': participate_status,
         }
