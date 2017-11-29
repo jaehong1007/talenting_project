@@ -5,11 +5,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hosting.models import Photo
-from utils.permissions import IsOwnerOrReadOnly
+from utils.permissions import IsOwnerOrReadOnly, IsPhotoOwnerOrReadOnly
 
 from .serializers import HostingSerializer, PhotoSerializer
-from .models import Hosting
+from .models import Hosting, Photo
 
 
 class HostingPagination(PageNumberPagination):
@@ -40,11 +39,16 @@ class HostingList(APIView):
 class HostingDetail(APIView):
     """
     Retrieve, update and delete a hosting post.
+
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
     """
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_object(self, pk):
-        return get_object_or_404(Hosting, pk=pk)
+        obj = get_object_or_404(Hosting, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(kwargs['hosting_pk'])
@@ -70,7 +74,7 @@ class PhotoList(APIView):
     List photos linked with hosting object or create a photo.
     """
 
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsPhotoOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
@@ -89,12 +93,17 @@ class PhotoList(APIView):
 class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
+
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
     """
 
-    # permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsPhotoOwnerOrReadOnly,)
 
     def get_object(self, pk):
-        return get_object_or_404(Photo, pk=pk)
+        obj = get_object_or_404(Photo, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request, *args, **kwargs):
         photo = self.get_object(kwargs['photo_pk'])
@@ -114,42 +123,42 @@ class PhotoDetail(APIView):
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-        # class HostingList(generics.ListCreateAPIView):
-        #     """
-        #     List hosting post or create a new hosting post
-        #     """
-        #     queryset = Hosting.objects.all()
-        #     serializer_class = HostingSerializer
-        #     # authentication_classes = (TokenAuthentication)
-        #     permission_classes = (IsOwnerOrReadOnly,)
-        #     pagination_class = HostingPagination
-        #
-        #     def perform_create(self, serializer):
-        #         serializer.save(owner=self.request.user)
+# class HostingList(generics.ListCreateAPIView):
+#     """
+#     List hosting post or create a new hosting post
+#     """
+#     queryset = Hosting.objects.all()
+#     serializer_class = HostingSerializer
+#     # authentication_classes = (TokenAuthentication)`
+#     permission_classes = (IsOwnerOrReadOnly,)
+#     pagination_class = HostingPagination
+#
+#     def perform_create(self, serializer):
+#         serializer.save(owner=self.request.user)
 
 
-        # class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
-        #     """
-        #     Retrieve, update, delete a hosting post
-        #     """
-        #     queryset = Hosting.objects.all()
-        #     lookup_url_kwarg = 'hosting_pk'
-        #     serializer_class = HostingSerializer
-        #     # authentication_classes = (TokenAuthentication)
-        #     permission_classes = (IsOwnerOrReadOnly,)
+# class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
+#     """
+#     Retrieve, update, delete a hosting post
+#     """
+#     queryset = Hosting.objects.all()
+#     lookup_url_kwarg = 'hosting_pk'
+#     serializer_class = HostingSerializer
+#     # authentication_classes = (TokenAuthentication)
+#     permission_classes = (IsOwnerOrReadOnly,)
 
-        # class PhotoList(generics.ListCreateAPIView):
-        #     hosting = Hosting.objects.get(pk=request.data[])
-        #     queryset = Photo.objects.all()
-        #     serializer_class = PhotoSerializer
-        #     permission_classes = (IsOwnerOrReadOnly,)
-        #
-        #     def perform_create(self, serializer):
-        #         serializer.save(place=self.request.data['hosting'])
 
-        #
-        # class PhotoDetail(generics.RetrieveUpdateDestroyAPIView):
-        #     queryset = Photo.objects.all()
-        #     lookup_url_kwarg = 'photo_pk'
-        #     serializer_class = PhotoSerializer
-        #     permission_classes = (IsOwnerOrReadOnly,)
+# class PhotoList(generics.ListCreateAPIView):
+#     queryset = Photo.objects.all()
+#     serializer_class = PhotoSerializer
+#     permission_classes = (IsPhotoOwnerOrReadOnly,)
+#
+#     def perform_create(self, serializer):
+#         serializer.save(place=self.request.data['hosting'])
+#
+#
+# class PhotoDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Photo.objects.all()
+#     lookup_url_kwarg = 'photo_pk'
+#     serializer_class = PhotoSerializer
+#     permission_classes = (IsPhotoOwnerOrReadOnly,)
