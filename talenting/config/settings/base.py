@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
-    'easy_thumbnails',
+    'imagekit',
 
     'member',
     'hosting',
@@ -139,17 +139,3 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-# Easy_thumbnail
-THUMBNAIL_ALIASES = {
-    'hosting.hosting.image': {
-        'quality': 100,
-        'subsampling': 2,
-        'auto crop': True,
-        'bw': False,
-        'crop': 'smart',
-        'upscale': True,
-    },
-}
-THUMBNAIL_MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
-THUMBNAIL_SUBDIR = 'thumbs'

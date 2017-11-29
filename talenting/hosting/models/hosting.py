@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.db import models
-from easy_thumbnails import fields
+from imagekit.models import ImageSpecField
+from pilkit.processors import ResizeToFill
 
-from utils.thumbnailer import customThumbnailer
+from utils.thumbnailer import Thumbnailer
 from ..options import *
 
 User = settings.AUTH_USER_MODEL
@@ -20,7 +21,10 @@ class Hosting(models.Model):
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
     primary_photo = models.ImageField(upload_to='hosting', blank=True)
-    thumbnail = fields.ThumbnailerImageField(blank=True)
+    thumbnail = ImageSpecField(source='primary_photo',
+                               processors=[ResizeToFill(100, 50)],
+                               format='JPEG',
+                               options={'quality': 85})
     recommend_counter = models.IntegerField(blank=True, null=True)
 
     # House
@@ -82,12 +86,10 @@ class Hosting(models.Model):
             if rev.recommend:
                 count += 1
         self.recommend_counter = count
-        self.save()
 
-    def create_thumbnails(self):
-        if self.primary_photo:
-            customThumbnailer(self.primary_photo)
-            self.save()
+    def save(self, *args, **kwargs):
+        self.get_recommend_counter()
+        super(Hosting, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ['-has_photo', '-recommend_counter']

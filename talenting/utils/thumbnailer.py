@@ -1,8 +1,8 @@
-from easy_thumbnails.files import get_thumbnailer
+from imagekit import ImageSpec
+from pilkit.processors import ResizeToFill
 
 
-def customThumbnailer(img):
-    if img:
-        thumbnail_options = dict(size=(100, 0))
-        file = get_thumbnailer(img).get_thumbnail(thumbnail_options)
-        return file
+class Thumbnailer(ImageSpec):
+    processors = [ResizeToFill(100, 50)]
+    format = 'JPEG'
+    options = {'quality': 85}
