@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io/api/macos,python,django,pycharm
-
+.media/
 
 ### Django ###
 *.log
