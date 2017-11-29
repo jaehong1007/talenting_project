@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import User, Profile
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2')
+        fields = ('pk', 'email', 'password1', 'password2', 'first_name', 'last_name')
 
     def validate(self, data):
         if data['password1'] != data['password2']:
@@ -19,5 +19,30 @@ class SignUpSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return self.Meta.model.objects.create_user(
             email=validated_data['email'],
-            password=validated_data['password2']
+            password=validated_data['password2'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
         )
+
+
+class LogInSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'email', 'password')
+        read_only_fields = ('password',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'email', 'password', 'self_intro', 'my_talent', 'city',
+                  'occupation', 'available_languages', 'profile_image')
+        read_only_fields = ('password',)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('user', 'self_intro', 'my_talent', 'city', 'occupation',
+                  'available_languages', 'profile_image')
+        read_only_fields = ('user',)

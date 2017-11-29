@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_extensions',
 
     'member',
@@ -73,6 +74,14 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+#DJANGO-REST-FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 # Template
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')

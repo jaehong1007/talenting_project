@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password, first_name, last_name):
         if not email:
@@ -28,19 +29,20 @@ class MyUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    #기본 인증정보
+    # 기본 인증정보
     email = models.EmailField(max_length=255, unique=True)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-    #권한
+    recommendations = models.IntegerField(default=0)
+
+    # 권한
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     is_host = models.BooleanField(default=False)
-    #TimeStamp
+    # TimeStamp
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    #유저의 추가정보
-    recommendations = models.IntegerField(default=0)
+    # 유저의 추가정보
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -90,14 +92,15 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-    # def get_user_average_rating(self):
-    #     '''유저 레이팅의 평균을 소수점으로 반환'''
-    #     user_reviews = self.user_review_about_guest.filter(guest=self)
-    #     if user_reviews:
-    #         user_ratings = [review.rating for review in user_reviews]
-    #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
-    #     return float(0)
-    #
+        # def get_user_average_rating(self):
+        #     '''유저 레이팅의 평균을 소수점으로 반환'''
+        #     user_reviews = self.user_review_about_guest.filter(guest=self)
+        #     if user_reviews:
+        #         user_ratings = [review.rating for review in user_reviews]
+        #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
+        #     return float(0)
+        #
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -105,9 +108,8 @@ class Profile(models.Model):
     my_talent = models.TextField()
     city = models.CharField(max_length=20)
     occupation = models.CharField(max_length=20)
-    available_languages = ArrayField(models.CharField(max_length=10))
-    profile_image = models.ImageField(upload_to='profile')
-
+    available_languages = ArrayField(models.CharField(max_length=30))
+    profile_image = models.ImageField(upload_to='profile', null=True, blank=True)
 
 
 class GuestReview(models.Model):
