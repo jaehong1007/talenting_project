@@ -8,6 +8,11 @@ from ..options import *
 User = settings.AUTH_USER_MODEL
 
 
+class HostingManager(models.Model):
+    def get_queryset(self):
+        return super().get_queryset().exclude(owner=None)
+
+
 class Hosting(models.Model):
     # Representation
     owner = models.OneToOneField(User, on_delete=models.CASCADE)

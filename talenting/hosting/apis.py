@@ -9,7 +9,7 @@ from .serializers import HostingSerializer
 from .models import Hosting
 
 
-class StandardResultsSetPagination(PageNumberPagination):
+class HostingPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
@@ -23,7 +23,10 @@ class HostingList(generics.ListCreateAPIView):
     serializer_class = HostingSerializer
     # authentication_classes = (TokenAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
-    pagination_class = StandardResultsSetPagination
+    pagination_class = HostingPagination
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -31,6 +34,7 @@ class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
     Retrieve, update, delete a hosting post
     """
     queryset = Hosting.objects.all()
+    lookup_url_kwarg = 'hosting_pk'
     serializer_class = HostingSerializer
     # authentication_classes = (TokenAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
