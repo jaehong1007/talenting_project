@@ -21,15 +21,12 @@ class WishListItems(models.Model):
         verbose_name = 'wishlist'
         verbose_name_plural = f'{verbose_name} 목록'
         ordering = ['-created_at']
-        unique_together = ['user', 'wish_event'], ['user','wish_user']
+        unique_together = ['user', 'wish_event'], ['user', 'wish_user']
 
     def __str__(self):
         return f'event_wishlist (' \
-                f'{self.wish_event}, ' \
-                f'{self.wish_user})'
-
-    def __unicode__(self):
-        assert self.wish_event
+                f'{self.wish_event.title}, ' \
+                f'{self.wish_user.first_name})'
 
     def get_absolute_url(self):
         return self.wish_event.get_absolute_url()

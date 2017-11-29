@@ -216,4 +216,6 @@ venv.bak/
 # Front Code
 /front/
 
-./media/
+
+.media/
+
