@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.permissions import IsOwnerOrReadOnly, IsPhotoOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly, IsPhotoOwnerOrReadOnly
 
 from .serializers import HostingSerializer, PhotoSerializer
 from .models import Hosting, Photo
