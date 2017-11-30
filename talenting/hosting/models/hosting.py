@@ -76,6 +76,10 @@ class Hosting(models.Model):
             self.has_photo = True
             self.save()
 
+    def get_photos(self):
+        photos = self.photo_set.all()
+        return photos
+
     def get_hosting_reviews(self):
         return self.hostingreview_set.all()
 
