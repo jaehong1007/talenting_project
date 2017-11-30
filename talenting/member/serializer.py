@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Profile
+from .models import User, Profile, ProfileImage
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -32,17 +32,36 @@ class LogInSerializer(serializers.ModelSerializer):
         read_only_fields = ('password',)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class ProfileCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('pk', 'email', 'password', 'self_intro', 'my_talent', 'city',
-                  'occupation', 'available_languages', 'profile_image')
-        read_only_fields = ('password',)
+        model = Profile
+        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation', 'available_languages')
+        read_only_fields = ('user',)
+
+
+class ProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ('pk', 'image', 'created_at')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField('_get_images')
+    age = serializers.SerializerMethodField('_calculate_age')
+
+    def _get_images(self, obj):
+        serializers = ProfileImageSerializer(obj.get_images(), many=True)
+        return serializers.data
+
+    def _calculate_age(self, obj):
+        if obj.birth:
+            return obj.calculate_age()
+        return None
+
     class Meta:
         model = Profile
-        fields = ('user', 'self_intro', 'my_talent', 'city', 'occupation',
-                  'available_languages', 'profile_image')
+        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation',
+                  'available_languages', 'images', 'age')
         read_only_fields = ('user',)

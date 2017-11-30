@@ -1,6 +1,9 @@
+from datetime import date
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from dateutil.relativedelta import relativedelta
+
 
 
 class MyUserManager(BaseUserManager):
@@ -101,15 +104,30 @@ class User(AbstractBaseUser):
         #     return float(0)
         #
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    self_intro = models.TextField()
-    my_talent = models.TextField()
-    city = models.CharField(max_length=20)
-    occupation = models.CharField(max_length=20)
-    available_languages = ArrayField(models.CharField(max_length=30))
-    profile_image = models.ImageField(upload_to='profile', null=True, blank=True)
+    birth = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=6, blank=True)
+    self_intro = models.TextField(blank=True)
+    talent_category = models.CharField(max_length=20, blank=True)
+    talent_intro = models.TextField(blank=True)
+    country = models.CharField(max_length=20, blank=True)
+    city = models.CharField(max_length=20, blank=True)
+    occupation = models.CharField(max_length=20, blank=True)
+    available_languages = ArrayField(models.CharField(max_length=30), blank=True)
+
+    def calculate_age(self):
+        today = date.today()
+        delta = relativedelta(today, self.birth)
+        return str(delta.years)
+
+    def get_images(self):
+        return self.images.all()
+
+class ProfileImage(models.Model):
+    profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='profile')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class GuestReview(models.Model):

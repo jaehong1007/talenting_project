@@ -5,15 +5,17 @@ from django.contrib.auth import authenticate
 # from django.utils.encoding import force_bytes
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
+from django.http import Http404
 from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from member.models import Profile
+from member.models import Profile, ProfileImage
 from utils.permissions import IsAuthorOrReadOnly
-from .serializer import SignUpSerializer, LogInSerializer, ProfileSerializer
+from .serializer import SignUpSerializer, LogInSerializer, ProfileCreateSerializer, ProfileSerializer, \
+    ProfileImageSerializer
 
 # from .tasks import send_mail_task
 
@@ -88,19 +90,42 @@ class EmailIsUnique(APIView):
 
 class ProfileCreate(generics.CreateAPIView):
     queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+    serializer_class = ProfileCreateSerializer
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProfileManage(generics.ListAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
 
-    def update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
-        return super().update(request, *args, **kwargs)
 
+
+# class Profile2(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Profile.objects.all()
+#     serializer_class = ProfileSerializer
+#
+#     def retrieve(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance)
+#         if instance.birth:
+#             age = instance.calculate_age()
+#         else:
+#             age = '알 수 없음'
+#         serializer.data['age'] = age
+#         return Response(serializer.data)
+#
+#     def update(self, request, *args, **kwargs):
+#         kwargs['partial'] = True
+#         return super().update(request, *args, **kwargs)
+
+
+class ProfileImage(generics.CreateAPIView):
+    queryset = ProfileImage.objects.all()
+    serializer_class = ProfileImageSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        serializer.save(profile=self.request.user.profile)
