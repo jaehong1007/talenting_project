@@ -87,6 +87,11 @@ class Hosting(models.Model):
                 count += 1
         self.recommend_counter = count
 
+    def create_thumbnail(self):
+        if self.primary_photo:
+            image_generator = Thumbnailer(source=self.primary_photo)
+            result = image_generator.generate()
+
     def save(self, *args, **kwargs):
         self.get_recommend_counter()
         super(Hosting, self).save(*args, **kwargs)
@@ -104,6 +109,17 @@ class Photo(models.Model):
 
     def __str__(self):
         return f'Photo: {self.caption}({self.type})'
+
+    def create_thumbnail(self):
+        if self.image:
+            image_generator = Thumbnailer(source=self.image)
+            result = image_generator.generate()
+
+    def save(self, *args, **kwargs):
+        super(Photo, self).save(*args, **kwargs)
+        self.create_thumbnail()
+        if self.place:
+            self.place.get_primary_photo()
 
 
 class HostingReview(models.Model):
