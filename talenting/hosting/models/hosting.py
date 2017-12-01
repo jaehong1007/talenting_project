@@ -98,6 +98,7 @@ class Hosting(models.Model):
 
     def save(self, *args, **kwargs):
         self.get_recommend_counter()
+        self.create_thumbnail()
         super(Hosting, self).save(*args, **kwargs)
 
     class Meta:

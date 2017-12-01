@@ -14,10 +14,11 @@ class PhotoSerializer(serializers.ModelSerializer):
         )
 
 
-class HostingSerializer(serializers.ModelSerializer):
+class HostingReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = HostingReview
         fields = (
+            'pk'
             'author',
             'host',
             'place',
@@ -28,20 +29,21 @@ class HostingSerializer(serializers.ModelSerializer):
 
 
 class HostingSerializer(serializers.ModelSerializer):
-    photos = serializers.SerializerMethodField('_get_photos')
-    reviews = serializers.SerializerMethodField('_get_reviews')
+    hosting_photos = serializers.SerializerMethodField('_get_photos')
+    hosting_reviews = serializers.SerializerMethodField('_get_reviews')
 
     def _get_photos(self, obj):
         serializer = PhotoSerializer(obj.get_photos(), many=True)
         return serializer.data
 
     def _get_reviews(self, obj):
-        serializer = PhotoSerializer(obj.get_hosting_reviews(), many=True)
+        serializer = HostingReviewSerializer(obj.get_hosting_reviews(), many=True)
         return serializer.data
 
     class Meta:
         model = Hosting
         fields = (
+            'pk',
             'owner',
             'category',
             'title',
@@ -75,6 +77,6 @@ class HostingSerializer(serializers.ModelSerializer):
             'published',
             'created_at',
             'updated_at',
-            'photos',
-            'reviews',
+            'hosting_photos',
+            'hosting_reviews',
         )
