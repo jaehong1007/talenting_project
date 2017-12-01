@@ -106,7 +106,7 @@ class Hosting(models.Model):
 
 
 class Photo(models.Model):
-    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE, related_name='photos')
     image = models.ImageField(upload_to='hosting')
     caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
@@ -126,11 +126,14 @@ class Photo(models.Model):
         if self.place:
             self.place.get_primary_photo()
 
+    class Meta:
+        ordering = ['-created_at']
+
 
 class HostingReview(models.Model):
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
     host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL)
+    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL, related_name='reviews')
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
