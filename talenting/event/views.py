@@ -1,15 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import EventForm
+from .forms import EventForm, CommentForm
 from .models import Event
 
 
 def event_list(request):
     events = Event.objects.all()
-    # comment_form = CommentForm()
+    comment_form = CommentForm()
     context = {
         'events': events,
         'comment_form': comment_form,
@@ -54,5 +54,26 @@ def event_delete(request, event_pk):
             return HttpResponse('succeed')
         else:
             raise PermissionDenied('You have no permission to delete')
+
+
+@login_required()
+def event_participate_toggle(request, event_pk):
+    if request.method == 'POST':
+        # event_pk에 해당하는 Event객체
+        event = get_object_or_404(Event, pk=event_pk)
+        # 요청한 사용자
+        user = request.user
+        # events 목록에서 참여 할 유저가 있는지 확인
+        filtered_event_participate = event.event_participate.filter(pk=user.pk)
+        # 존재할경우, 목록에서 해당 유저를 삭제
+        if filtered_event_participate.exists():
+            event.event_participate.remove(user)
+        # 없을 경우, like_posts목록에 해당 Post를 추가
+        else:
+            event.event_participate.add(user)
+
+        # 이동할 path가 존재할 경우 해당 위치로, 없을 경우 Post상세페이지로 이동
+
+        return redirect('post:post_detail', event_pk=event_pk)
 
 

@@ -23,7 +23,7 @@ config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
-# Static Paths
+# Static Path
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -76,6 +76,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# DJANGO-REST-FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
 # Template
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
@@ -101,14 +109,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Custom User
 AUTH_USER_MODEL = 'member.User'
 EVENT_ITEM_MODEL = 'event.Event'
-
-# Databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
