@@ -34,7 +34,8 @@ MEAL_TYPES = [
 INTERNET_TYPES = [
     (1, 'Wifi'),
     (2, 'Only LAN'),
-    (3, 'No Internet'),
+    (3, 'Both'),
+    (4, 'No Internet'),
 ]
 
 CAPACITIES = n_tuple(10)

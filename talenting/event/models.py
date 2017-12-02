@@ -79,11 +79,3 @@ class Photo(models.Model):
     event = models.ForeignKey(Event, related_name='event_photo')
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.filename
-
-    @property
-    def filename(self):
-        return self.file.name.rsplit('/', 1)[-1]
-

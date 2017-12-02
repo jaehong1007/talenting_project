@@ -207,6 +207,7 @@ venv.bak/
 #Custom
 .idea/
 .config_secret/
+.media/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
@@ -215,6 +216,4 @@ venv.bak/
 
 # Front Code
 /front/
-
-.media/
 

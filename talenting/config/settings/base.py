@@ -23,7 +23,7 @@ config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
-# Static Paths
+# Static Path
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
+    'imagekit',
 
     'member',
     'hosting',
@@ -78,7 +79,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
-#DJANGO-REST-FRAMEWORK
+# DJANGO-REST-FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
