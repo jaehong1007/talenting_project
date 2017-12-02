@@ -35,8 +35,8 @@ class LogInSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('pk', 'email', 'password', 'self_intro', 'my_talent', 'city',
-                  'occupation', 'available_languages', 'profile_image')
+        fields = ('pk', 'email', 'password',
+                  )
         read_only_fields = ('password',)
 
 

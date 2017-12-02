@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from imagekit.models import ImageSpecField
+from pilkit.processors import ResizeToFill
 
 from event.options import EVENT_CATEGORIES
 from .countries import COUNTRIES
@@ -21,7 +23,13 @@ class Event(models.Model):
     state = models.CharField(_('State/Region'), max_length=40, null=True, blank=True)
     city = models.CharField(_('City'), max_length=40)
     price = models.DecimalField(_('Price per person'), decimal_places=2, max_digits=6, blank=True, null=True)
-    photo = models.ImageField(upload_to='event')
+    primary_photo = models.ImageField(upload_to='event')
+    primary_photo_thumbnail = ImageSpecField(
+        source='primary_photo',
+        processors=[ResizeToFill(100, 50)],
+        format='JPEG',
+        options={'quality': 60}
+        )
     opening_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
     event_date = models.DateTimeField()
@@ -34,6 +42,7 @@ class Event(models.Model):
         blank=True,
         verbose_name='참여한 유저 목록'
     )
+
     objects = EventManager()
 
     class Meta:
@@ -41,6 +50,14 @@ class Event(models.Model):
 
     def __str__(self):
         return f'{self.title}'
+
+    def get_participant_counter(self):
+        participants = self.participants.all()
+        count = 0
+        for user in participants:
+            if user.participants:
+                count += 1
+        self.particiapnts_counter = count
 
 
 class EventComment(models.Model):
@@ -62,4 +79,11 @@ class Photo(models.Model):
     event = models.ForeignKey(Event, related_name='event_photo')
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.filename
+
+    @property
+    def filename(self):
+        return self.file.name.rsplit('/', 1)[-1]
 

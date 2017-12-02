@@ -8,9 +8,6 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = (
-            'pk',
-            'photo',
-            'author',
-            'created_at',
-            'updated_at',
+            '__all__'
         )
+

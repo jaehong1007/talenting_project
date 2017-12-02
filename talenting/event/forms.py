@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Event, EventComment
+from .models import Event, EventComment, Photo
 
 
 class EventForm(forms.ModelForm):
@@ -15,8 +15,8 @@ class EventForm(forms.ModelForm):
             'state',
             'city',
             'price',
-            'photo',
-            'starting_date',
+            'primary_photo',
+            'opening_date',
             'closing_date',
             'maximum_participant',
         )
@@ -45,3 +45,25 @@ class CommentForm(forms.ModelForm):
             )
         }
 
+
+class ImageForm(forms.ModelForm):
+    # this will return only first saved image on save()
+    image = forms.ImageField(widget=forms.FileInput(attrs={'multiple': True}), required=True)
+
+    class Meta:
+        model = Photo
+        fields = ['image', 'position']
+
+    def save(self, *args, **kwargs):
+        # multiple file upload
+        # NB: does not respect 'commit' kwarg
+
+        self.instance.image = file_list[0]
+        for file in file_list[1:]:
+            Photo.objects.create(
+                product=self.cleaned_data['product'],
+                image=file,
+                position=self.cleaned_data['position'],
+            )
+
+        return super().save(*args, **kwargs)
