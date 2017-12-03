@@ -3,7 +3,7 @@ from django.db import models
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFill
 
-from ..thumbnailer import Thumbnailer
+from ...utils.thumbnailer import Thumbnailer
 from ..options import *
 
 User = get_user_model()
