@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFill
@@ -6,7 +6,7 @@ from pilkit.processors import ResizeToFill
 from ..thumbnailer import Thumbnailer
 from ..options import *
 
-User = settings.AUTH_USER_MODEL
+User = get_user_model()
 
 
 class HostingManager(models.Model):
@@ -72,7 +72,7 @@ class Hosting(models.Model):
     def get_primary_photo(self):
         photos = self.photo_set.all()
         if photos:
-            self.primary_photo = photos[0].image
+            self.primary_photo = photos[0].hosting_image
             self.has_photo = True
             self.save()
 
@@ -106,8 +106,8 @@ class Hosting(models.Model):
 
 
 class Photo(models.Model):
-    place = models.ForeignKey(Hosting, on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(upload_to='hosting')
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    hosting_image = models.ImageField(upload_to='hosting')
     caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -116,8 +116,8 @@ class Photo(models.Model):
         return f'Photo: {self.caption}({self.type})'
 
     def create_thumbnail(self):
-        if self.image:
-            image_generator = Thumbnailer(source=self.image)
+        if self.hosting_image:
+            image_generator = Thumbnailer(source=self.hosting_image)
             result = image_generator.generate()
 
     def save(self, *args, **kwargs):
@@ -133,8 +133,8 @@ class Photo(models.Model):
 class HostingReview(models.Model):
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
     host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL, related_name='reviews')
-    review = models.TextField()
+    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL)
+    hosting_review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

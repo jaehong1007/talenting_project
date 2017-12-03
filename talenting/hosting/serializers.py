@@ -8,7 +8,8 @@ class PhotoSerializer(serializers.ModelSerializer):
         model = Photo
         fields = (
             'pk',
-            'image',
+            'place',
+            'hosting_image',
             'caption',
             'type',
         )
@@ -22,16 +23,13 @@ class HostingReviewSerializer(serializers.ModelSerializer):
             'author',
             'host',
             'place',
-            'review',
+            'hosting_review',
             'recommend',
             'created_at',
         )
 
 
 class HostingSerializer(serializers.ModelSerializer):
-    photos = PhotoSerializer(many=True)
-    reviews = HostingReviewSerializer(many=True)
-
     class Meta:
         model = Hosting
         fields = (
@@ -69,6 +67,12 @@ class HostingSerializer(serializers.ModelSerializer):
             'published',
             'created_at',
             'updated_at',
-            'photos',
-            'reviews',
         )
+
+
+        # class HostingListSerializer(serializers.ListSerializer):
+        #     @property
+        #     def data(self):
+        #         serialized_data = super(HostingListSerializer, self).data
+        #         custom_representation = {'hosting': serialized_data}
+        #         return custom_representation
