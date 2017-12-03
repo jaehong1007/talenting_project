@@ -6,15 +6,15 @@ from django.contrib.auth import authenticate
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
 from django.http import Http404
-from rest_framework import status, generics
-from rest_framework.authtoken.models import Token
+from rest_framework import status, generics, mixins
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from member.models import Profile, ProfileImage
+from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly
-from .serializer import SignUpSerializer, LogInSerializer, ProfileCreateSerializer, ProfileSerializer, \
+from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileSerializer, \
     ProfileImageSerializer
 
 # from .tasks import send_mail_task
@@ -23,9 +23,13 @@ User = get_user_model()
 
 
 class SignUp(APIView):
+
+    def get_fields_info(self):
+        return 'user', SignUpSerializer.Meta.fields
+
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             # Test의 편의성을 위해 임시로 가입하는 사람은 전부 active 처리
             user.is_active = True
@@ -51,12 +55,22 @@ class SignUp(APIView):
                 recipient=email
             )
             '''
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            data = {
+                'user': serializer.data,
+            }
+            message = {
+                'code': status.HTTP_201_CREATED,
+                'msg': ''
+            }
+            data.update(message)
+            return Response(data=data, status=status.HTTP_201_CREATED)
 
 
 class LogIn(APIView):
+
+    def get_fields_info(self):
+        return 'user', LogInSerializer.Meta.fields
+
     def post(self, request, *args, **kwargs):
         email = request.data['email']
         password = request.data['password']
@@ -66,14 +80,15 @@ class LogIn(APIView):
             password=password,
         )
         if user:
-            token, token_created = Token.objects.get_or_create(user=user)
-            data = {
-                'token': token.key,
-                'user': LogInSerializer(user).data,
-            }
+            data = LogInSerializer(user).data
+            data.update(
+                {'code': status.HTTP_201_CREATED,
+                 'msg': ''
+                 }
+            )
             return Response(data, status=status.HTTP_200_OK)
         else:
-            return Response({'message': '아이디 혹은 이메일이 올바르지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+            raise LogInException('사용자 인증 실패')
 
 
 class EmailIsUnique(APIView):
@@ -81,45 +96,40 @@ class EmailIsUnique(APIView):
         input_email = request.data['email']
         import re
         pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+        data = dict(
+            email=input_email,
+            code=status.HTTP_200_OK,
+            msg='사용가능한 이메일입니다.'
+        )
         if not re.match(pattern, input_email):
-            return Response({'message': '유효하지 않은 이메일 형식입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            data['code'] = status.HTTP_400_BAD_REQUEST
+            data['msg'] = '올바르지 않은 이메일 형식입니다.'
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
         elif User.objects.filter(email=input_email).exists():
-            return Response({'message': '이미 가입되어 있는 이메일입니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'message': '유효한 이메일입니다.'}, status=status.HTTP_200_OK)
+            data['code'] = status.HTTP_400_BAD_REQUEST
+            data['msg'] = '이미 가입되어 있는 이메일입니다.'
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class ProfileCreate(generics.CreateAPIView):
     queryset = Profile.objects.all()
-    serializer_class = ProfileCreateSerializer
+    serializer_class = ProfileManageSerializer
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class ProfileManage(generics.ListAPIView):
+class ProfileRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+    serializer_class = ProfileManageSerializer
+    permission_classes = (IsAuthorOrReadOnly,)
 
-
-
-# class Profile2(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Profile.objects.all()
-#     serializer_class = ProfileSerializer
-#
-#     def retrieve(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         serializer = self.get_serializer(instance)
-#         if instance.birth:
-#             age = instance.calculate_age()
-#         else:
-#             age = '알 수 없음'
-#         serializer.data['age'] = age
-#         return Response(serializer.data)
-#
-#     def update(self, request, *args, **kwargs):
-#         kwargs['partial'] = True
-#         return super().update(request, *args, **kwargs)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ProfileSerializer(instance)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class ProfileImage(generics.CreateAPIView):

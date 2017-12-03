@@ -1,9 +1,10 @@
 from datetime import date
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.db import models
-from django.contrib.postgres.fields import ArrayField
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from rest_framework.authtoken.models import Token
 
 
 class MyUserManager(BaseUserManager):
@@ -55,6 +56,10 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+    @property
+    def token(self):
+        return Token.objects.get_or_create(user=self)[0].key
 
     def __str__(self):
         return self.email
@@ -120,9 +125,6 @@ class Profile(models.Model):
         today = date.today()
         delta = relativedelta(today, self.birth)
         return str(delta.years)
-
-    def get_images(self):
-        return self.images.all()
 
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)

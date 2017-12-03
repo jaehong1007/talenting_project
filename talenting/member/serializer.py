@@ -26,13 +26,21 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class LogInSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = ('pk', 'email', 'password')
-        read_only_fields = ('password',)
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        data = {
+            'token': instance.token,
+            'user': ret,
+        }
+        return data
 
-class ProfileCreateSerializer(serializers.ModelSerializer):
+class ProfileManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
@@ -47,12 +55,8 @@ class ProfileImageSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    images = serializers.SerializerMethodField('_get_images')
+    images = ProfileImageSerializer(many=True)
     age = serializers.SerializerMethodField('_calculate_age')
-
-    def _get_images(self, obj):
-        serializers = ProfileImageSerializer(obj.get_images(), many=True)
-        return serializers.data
 
     def _calculate_age(self, obj):
         if obj.birth:
