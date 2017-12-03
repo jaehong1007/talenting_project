@@ -119,7 +119,13 @@ class Profile(models.Model):
     country = models.CharField(max_length=20, blank=True)
     city = models.CharField(max_length=20, blank=True)
     occupation = models.CharField(max_length=20, blank=True)
-    available_languages = ArrayField(models.CharField(max_length=30), blank=True)
+    available_languages = ArrayField(models.CharField(max_length=30, blank=True), null=True)
+
+    @property
+    def age(self):
+        if self.birth:
+            return self.calculate_age()
+        else: return None
 
     def calculate_age(self):
         today = date.today()

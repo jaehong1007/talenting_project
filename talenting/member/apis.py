@@ -5,17 +5,16 @@ from django.contrib.auth import authenticate
 # from django.utils.encoding import force_bytes
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
-from django.http import Http404
-from rest_framework import status, generics, mixins
-from rest_framework.generics import GenericAPIView
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from member.models import Profile, ProfileImage
+from utils.api import MyRetrieveUpdateDestroyAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly
-from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileSerializer, \
-    ProfileImageSerializer
+from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer
 
 # from .tasks import send_mail_task
 
@@ -34,6 +33,7 @@ class SignUp(APIView):
             # Test의 편의성을 위해 임시로 가입하는 사람은 전부 active 처리
             user.is_active = True
             user.save()
+            Profile.objects.create(user=user)
 
             '''
             임시로 블락처리
@@ -112,27 +112,19 @@ class EmailIsUnique(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class ProfileCreate(generics.CreateAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileManageSerializer
-    permission_classes = (IsAuthenticated,)
+class ProfileRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
+    def get_fields_info(self):
+        return 'profile', ProfileManageSerializer.Meta.fields
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class ProfileRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileManageSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = ProfileSerializer(instance)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
-
 
 class ProfileImage(generics.CreateAPIView):
+    def get_fields_info(self):
+        return 'profileimage', ProfileImageSerializer.Meta.fields
+
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
     permission_classes = (IsAuthenticated,)

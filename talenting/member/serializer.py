@@ -32,20 +32,13 @@ class LogInSerializer(serializers.ModelSerializer):
         model = User
         fields = ('pk', 'email', 'password')
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        data = {
-            'token': instance.token,
-            'user': ret,
-        }
-        return data
 
 class ProfileManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
-                  'talent_intro', 'country', 'city', 'occupation', 'available_languages')
-        read_only_fields = ('user',)
+                  'talent_intro', 'country', 'city', 'occupation', 'available_languages', 'age')
+        read_only_fields = ('user', 'age',)
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
