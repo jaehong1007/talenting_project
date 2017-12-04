@@ -7,8 +7,10 @@ from django.conf import settings
 
 ALPHABET_FOR_TEST = 'abcdefghijklmnopqrstuvwxyz'
 
+
 def rand_name(len, char):
     return "".join([random.choice(char) for _ in range(len)])
+
 
 def make_guest(email, password):
     user = User.objects.create_user(email=email, password=password,
@@ -17,6 +19,7 @@ def make_guest(email, password):
     user.is_active = True
     user.save()
     return user
+
 
 def make_host(email, password):
     user = make_guest(email=email, password=password)
@@ -99,6 +102,8 @@ class GuestReviewModelTest(TestCase):
         youngchan.write_review_to_guest(guest_pk=sejun.pk, review='세준씨는 좋은 사람입니다2', recommend=True)
         sejun = User.objects.last()
         self.assertEqual(sejun.recommendations, 2)
+
+
 class ProfileModelTest(TestCase):
     def test_user_has_a_profile(self):
         sejun = make_host(email='sejun@gmail.com', password='ab33591242')
@@ -106,10 +111,8 @@ class ProfileModelTest(TestCase):
         photo = SimpleUploadedFile(name='test_image.jpg', content=open(path, 'rb').read(),
                                    content_type='image/jpeg')
         sejun_profile = Profile.objects.create(user=sejun, self_intro='나는 세준입니다', my_talent='영어 잘합니다',
-                               city='서울', occupation='학생', available_languages=['한국어', '영어'],
-                               profile_image=photo)
+                                               city='서울', occupation='학생', available_languages=['한국어', '영어'],
+                                               profile_image=photo)
         self.assertEqual(sejun_profile.user, sejun)
         self.assertEqual(sejun_profile.available_languages, ['한국어', '영어'])
         sejun_profile.profile_image.delete()
-
-

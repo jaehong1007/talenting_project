@@ -1,119 +1,114 @@
 import io
+import unittest
+from random import randint
+
 from django.core.files import File
-from django.test import TestCase
 
 from member.models import User
-from hosting.models import Description
 from .models import Hosting, HostingReview, Photo
 
-USER_EMAIL = 'user@gmail.com'
-USER_PASSWORD = 'password'
-HOST_EMAIL = 'host@gmail.com'
-HOST_PASSWORD = 'password'
-IMAGE = File(io.BytesIO())
-PHOTO_NAME = 'My house'
 
+class HostingModelTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User(
+            email='user@gmail.com',
+            password='password',
+            first_name='Namwoo',
+            last_name='Seo',
+        )
+        cls.host = User(
+            email='host@gmail.com',
+            password='password',
+            first_name='Andreea',
+            last_name='Sorian',
+        )
+        cls.hosting = Hosting(owner=cls.host)
 
-def create_user(email, password):
-    user = User.objects.create_user(
-        email=email,
-        password=password,
-    )
-    return user
-
-
-def create_hosting(user):
-    hosting = Hosting.objects.create(
-        owner=user,
-    )
-    return hosting
-
-
-def create_hosting_review(user, host, hosting):
-    hosting_review = HostingReview.objects.create(
-        author=user,
-        host=host,
-        place=hosting,
-    )
-    return hosting_review
-
-
-def create_photo(hosting, image, name):
-    photo = Photo.objects.create(
-        place=hosting,
-        image=image,
-        name=name,
-    )
-    return photo
-
-
-def create_description(hosting):
-    description = Description.objects.create(
-        place=hosting,
-    )
-    return description
-
-
-class HostingModelTest(TestCase):
     def test_saving_and_retrieving_hosting(self):
-        user = create_user(USER_EMAIL, USER_PASSWORD)
-        hosting = create_hosting(user)
+        self.assertEqual(self.hosting.owner, self.host)
+        self.assertEqual(self.hosting.title, '')
+        self.assertEqual(self.hosting.primary_photo, '')
+        self.assertEqual(self.hosting.category, 1)
+        self.assertEqual(self.hosting.recommend_counter, None)
+        self.assertEqual(self.hosting.house_type, 1)
+        self.assertEqual(self.hosting.room_type, 1)
+        self.assertEqual(self.hosting.capacity, 1)
+        self.assertEqual(self.hosting.meal_type, 1)
+        self.assertEqual(self.hosting.internet, 1)
+        self.assertEqual(self.hosting.language, '')
+        self.assertEqual(self.hosting.rules, '')
+        self.assertEqual(self.hosting.min_stay, 1)
+        self.assertEqual(self.hosting.max_stay, 1)
+        self.assertEqual(self.hosting.description, '')
+        self.assertEqual(self.hosting.to_do, '')
+        self.assertEqual(self.hosting.exchange, '')
+        self.assertEqual(self.hosting.neighborhood, '')
+        self.assertEqual(self.hosting.transportation, '')
+        self.assertEqual(self.hosting.country, '')
+        self.assertEqual(self.hosting.city, '')
+        self.assertEqual(self.hosting.distinct, '')
+        self.assertEqual(self.hosting.street, '')
+        self.assertEqual(self.hosting.address, '')
+        self.assertEqual(self.hosting.postcode, '')
+        self.assertEqual(self.hosting.lat, 0.0)
+        self.assertEqual(self.hosting.lon, 0.0)
+        self.assertEqual(self.hosting.active, True)
+        self.assertEqual(self.hosting.published, False)
 
-        self.assertEqual(hosting.owner, user)
-        self.assertEqual(hosting.title, '')
-        self.assertEqual(hosting.rules, None)
-        self.assertEqual(hosting.primary_photo, None)
-        self.assertEqual(hosting.category, 1)
-        self.assertEqual(hosting.house_type, 1)
-        self.assertEqual(hosting.room_type, 1)
-        self.assertEqual(hosting.capacity, 1)
-        self.assertEqual(hosting.meal_type, 1)
-        self.assertEqual(hosting.internet, 1)
-        self.assertEqual(hosting.language, '')
-        self.assertEqual(hosting.min_stay, 1)
-        self.assertEqual(hosting.max_stay, 1)
-        self.assertEqual(hosting.country, '')
-        self.assertEqual(hosting.city, '')
-        self.assertEqual(hosting.distinct, '')
-        self.assertEqual(hosting.street, '')
-        self.assertEqual(hosting.address, None)
-        self.assertEqual(hosting.active, True)
-        self.assertEqual(hosting.published, False)
-
-
-class HostingReviewModelTest(TestCase):
     def test_saving_and_retrieving_hosting_review(self):
-        user = create_user(USER_EMAIL, USER_PASSWORD)
-        host = create_user(HOST_EMAIL, HOST_PASSWORD)
-        hosting = create_hosting(host)
-        hosting_review = create_hosting_review(user, host, hosting)
+        hosting_review = HostingReview(author=self.user, host=self.host, place=self.hosting)
 
-        self.assertEqual(hosting_review.author, user)
-        self.assertEqual(hosting_review.host, host)
-        self.assertEqual(hosting_review.place, hosting)
+        self.assertEqual(hosting_review.author, self.user)
+        self.assertEqual(hosting_review.host, self.host)
+        self.assertEqual(hosting_review.place, self.hosting)
         self.assertEqual(hosting_review.review, '')
         self.assertEqual(hosting_review.recommend, True)
 
-
-class PhotoModelTest(TestCase):
     def test_saving_and_retrieving_photo(self):
-        host = create_user(HOST_EMAIL, HOST_PASSWORD)
-        hosting = create_hosting(host)
-        photo = create_photo(hosting, IMAGE, PHOTO_NAME)
+        image = File(io.BytesIO())
+        caption = 'My house'
 
-        self.assertEqual(photo.place, hosting)
-        self.assertEqual(photo.name, PHOTO_NAME)
-        self.assertEqual(photo.image, IMAGE)
-        self.assertEqual(photo.type, 5)
+        photo = Photo(place=self.hosting, image=image, caption=caption)
+
+        self.assertEqual(photo.place, self.hosting)
+        self.assertEqual(photo.caption, caption)
+        self.assertEqual(photo.image, image)
+        self.assertEqual(photo.type, 1)
 
 
-class DescriptionModelTest(TestCase):
-    def test_saving_and_retrieving_description(self):
-        host = create_user(HOST_EMAIL, HOST_PASSWORD)
-        hosting = create_hosting(host)
-        description = create_description(hosting)
+class HostingMethodTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = User.objects.create_user(
+            email='user@gmail.com',
+            password='password',
+            first_name='Namwoo',
+            last_name='Seo',
+        )
+        cls.host = User.objects.create_user(
+            email='host@gmail.com',
+            password='password',
+            first_name='Andreea',
+            last_name='Sorian',
+        )
+        cls.hosting = Hosting.objects.create(owner=cls.host)
 
-        self.assertEqual(description.place, hosting)
-        self.assertEqual(description.title, '')
-        self.assertEqual(description.description, '')
-        self.assertEqual(description.to_do, '')
+    def test_get_primary_photo_method(self):
+        num = randint(0, 10)
+        for i in range(num):
+            Photo.objects.create(place=self.hosting)
+        photos = self.hosting.photo_set.all()
+        self.assertEqual(photos.count(), num)
+
+        self.hosting.get_primary_photo()
+
+        self.assertEqual(self.hosting.primary_photo, photos[0].image)
+
+    def test_get_recommend_counter_method(self):
+        num = randint(0, 10)
+        for i in range(num):
+            HostingReview.objects.create(author=self.user, host=self.host, place=self.hosting)
+        self.hosting.get_recommend_counter()
+
+        self.assertEqual(self.hosting.recommend_counter, num)

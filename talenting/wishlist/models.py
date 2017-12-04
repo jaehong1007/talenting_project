@@ -24,8 +24,7 @@ class WishListItems(models.Model):
 
     def __str__(self):
         return f'event_wishlist (' \
-               f'{self.wish_event}, ' \
-               f'{self.wish_user})'
+
 
     def get_absolute_url(self):
         return self.wish_event.get_absolute_url()

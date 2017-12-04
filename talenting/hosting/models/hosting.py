@@ -1,34 +1,66 @@
 from django.conf import settings
 from django.db import models
+from imagekit.models import ImageSpecField
+from pilkit.processors import ResizeToFill
 
+from ..thumbnailer import Thumbnailer
 from ..options import *
 
 User = settings.AUTH_USER_MODEL
 
 
-class Hosting(models.Model):
-    owner = models.ForeignKey(User)
-    category = models.SmallIntegerField(choices=CATEGORIES, default=1)
-    title = models.CharField(max_length=100)
-    summary = models.TextField(default='')
-    primary_photo = models.ImageField(upload_to='hosting', blank=True, null=True)
+class HostingManager(models.Model):
+    def get_queryset(self):
+        return super().get_queryset().exclude(owner=None)
 
+
+class Hosting(models.Model):
+    # Representation
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    category = models.SmallIntegerField(choices=CATEGORIES, default=1)
+    title = models.CharField(max_length=50)
+    summary = models.TextField(max_length=500)
+    primary_photo = models.ImageField(upload_to='hosting', blank=True)
+    thumbnail = ImageSpecField(source='primary_photo',
+                               processors=[ResizeToFill(100, 50)],
+                               format='JPEG',
+                               options={'quality': 85})
+    recommend_counter = models.IntegerField(blank=True, null=True)
+
+    # House
     house_type = models.SmallIntegerField(choices=HOUSE_TYPES, default=1)
     room_type = models.SmallIntegerField(choices=ROOM_TYPES, default=1)
-    capacity = models.SmallIntegerField(choices=CAPACITIES, default=1)
     meal_type = models.SmallIntegerField(choices=MEAL_TYPES, default=1)
+    capacity = models.SmallIntegerField(choices=CAPACITIES, default=1)
     internet = models.SmallIntegerField(choices=INTERNET_TYPES, default=1)
+    smoking = models.NullBooleanField()
+    pet = models.NullBooleanField()
+    rules = models.TextField(blank=True)
     language = models.CharField(max_length=5, choices=LANGUAGES)
-    rules = models.TextField(blank=True, null=True)
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
+    # Description
+    description = models.TextField(blank=True)
+    to_do = models.TextField(blank=True)
+    exchange = models.TextField(blank=True)
+    neighborhood = models.TextField(blank=True)
+    transportation = models.TextField(blank=True)
+
+    # Address
     country = models.CharField(max_length=2, choices=COUNTRIES)
     city = models.CharField(max_length=10)
     distinct = models.CharField(max_length=40)
     street = models.CharField(max_length=60)
-    address = models.CharField(max_length=100, blank=True, null=True)
+    address = models.CharField(max_length=100, blank=True)
+    postcode = models.CharField(max_length=10, blank=True)
 
+    # Geolocation
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
+
+    # Timestamp/Status
+    has_photo = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,38 +69,77 @@ class Hosting(models.Model):
     def __str__(self):
         return self.title
 
+    def get_primary_photo(self):
+        photos = self.photo_set.all()
+        if photos:
+            self.primary_photo = photos[0].image
+            self.has_photo = True
+            self.save()
+
+    def get_photos(self):
+        photos = self.photo_set.all()
+        return photos
+
+    def get_hosting_reviews(self):
+        return self.hostingreview_set.all()
+
+    def get_recommend_counter(self):
+        reviews = self.hostingreview_set.all()
+        count = 0
+        for rev in reviews:
+            if rev.recommend:
+                count += 1
+        self.recommend_counter = count
+
+    def create_thumbnail(self):
+        if self.primary_photo:
+            image_generator = Thumbnailer(source=self.primary_photo)
+            result = image_generator.generate()
+
+    def save(self, *args, **kwargs):
+        self.get_recommend_counter()
+        self.create_thumbnail()
+        super(Hosting, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-has_photo', '-recommend_counter']
+
 
 class Photo(models.Model):
-    place = models.ForeignKey(Hosting, blank=True, null=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE, related_name='photos')
     image = models.ImageField(upload_to='hosting')
-    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=5)
+    caption = models.CharField(max_length=50, blank=True)
+    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
-class Description(models.Model):
-    place = models.ForeignKey(Hosting)
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    to_do = models.TextField()
-
     def __str__(self):
-        return self.title
+        return f'Photo: {self.caption}({self.type})'
+
+    def create_thumbnail(self):
+        if self.image:
+            image_generator = Thumbnailer(source=self.image)
+            result = image_generator.generate()
+
+    def save(self, *args, **kwargs):
+        super(Photo, self).save(*args, **kwargs)
+        self.create_thumbnail()
+        if self.place:
+            self.place.get_primary_photo()
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, related_name='who_reviews')
-    host = models.ForeignKey(User, related_name='who_is_reviewed', on_delete=models.CASCADE)
-    place = models.ForeignKey(Hosting, related_name='where_is_reviewed')
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
+    host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL, related_name='reviews')
     review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
-class LocationInfo(models.Model):
-    place = models.ForeignKey(Hosting)
-    description = models.TextField()
-    neighborhood = models.TextField()
-
     def __str__(self):
-        return self.place.title
+        return f'Author: {self.author.first_name}'
+
+    class Meta:
+        ordering = ['-created_at']

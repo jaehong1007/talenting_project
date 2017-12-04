@@ -14,7 +14,11 @@ class MyUserManager(BaseUserManager):
         if not password:
             raise ValueError("User must have a password")
 
-        user = self.model(email=self.normalize_email(email))
+        user = self.model(
+            email=self.normalize_email(email),
+            first_name=first_name,
+            last_name=last_name,
+        )
         user.set_password(password)
         user.first_name = first_name
         user.last_name = last_name
@@ -24,6 +28,7 @@ class MyUserManager(BaseUserManager):
     def create_superuser(self, email, password, first_name, last_name):
         user = self.create_user(email=email, password=password,
                                 first_name=first_name, last_name=last_name)
+
         user.is_active = True
         user.is_admin = True
 
@@ -35,6 +40,7 @@ class MyUserManager(BaseUserManager):
 class User(AbstractBaseUser):
     # 기본 인증정보
     email = models.EmailField(max_length=255, unique=True)
+
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     recommendations = models.IntegerField(default=0)
@@ -42,6 +48,7 @@ class User(AbstractBaseUser):
     # 권한
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+
     is_host = models.BooleanField(default=False)
     # TimeStamp
     created_at = models.DateTimeField(auto_now_add=True)
@@ -99,6 +106,8 @@ class User(AbstractBaseUser):
     def get_guest_review_by_hosts(self):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
+
+
 
         # def get_user_average_rating(self):
         #     '''유저 레이팅의 평균을 소수점으로 반환'''
