@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Hosting, Photo, HostingReview
+from .models.hosting import Hosting, Photo, HostingReview
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -34,7 +34,6 @@ class HostingSerializer(serializers.ModelSerializer):
         model = Hosting
         fields = (
             'pk',
-            'owner',
             'category',
             'title',
             'summary',
@@ -63,7 +62,6 @@ class HostingSerializer(serializers.ModelSerializer):
             'postcode',
             'lat',
             'lon',
-            'active',
             'published',
             'created_at',
             'updated_at',

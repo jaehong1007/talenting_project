@@ -1,6 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+#from django.contrib.postgres.fields import ArrayField
 
 
 class MyUserManager(BaseUserManager):
@@ -117,7 +117,7 @@ class Profile(models.Model):
     my_talent = models.TextField()
     city = models.CharField(max_length=20)
     occupation = models.CharField(max_length=20)
-    available_languages = ArrayField(models.CharField(max_length=30))
+    #available_languages = ArrayField(models.CharField(max_length=30))
     profile_image = models.ImageField(upload_to='profile', null=True, blank=True)
 
 

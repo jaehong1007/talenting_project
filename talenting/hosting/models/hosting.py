@@ -3,7 +3,7 @@ from django.db import models
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFill
 
-from ...utils.thumbnailer import Thumbnailer
+from utils.thumbnailer import Thumbnailer
 from ..options import *
 
 User = get_user_model()
@@ -16,7 +16,7 @@ class HostingManager(models.Model):
 
 class Hosting(models.Model):
     # Representation
-    owner = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
@@ -61,8 +61,7 @@ class Hosting(models.Model):
 
     # Timestamp/Status
     has_photo = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
-    published = models.BooleanField(default=False)
+    published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

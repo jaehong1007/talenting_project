@@ -1,14 +1,14 @@
 from rest_framework import status, generics, permissions
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, BaseAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
+from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
 from .serializers import HostingSerializer, PhotoSerializer, HostingReviewSerializer
-from .models import Hosting, Photo, HostingReview
+from .models.hosting import Hosting, Photo, HostingReview
 
 
 class HostingPagination(PageNumberPagination):
@@ -22,7 +22,6 @@ class HostingList(APIView):
     List hosting posts or create a hosting post.
     """
     permission_classes = (IsOwnerOrReadOnly,)
-    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, *args, **kwargs):
         hostings = Hosting.objects.all()
@@ -33,7 +32,7 @@ class HostingList(APIView):
     def post(self, request, *args, **kwargs):
         serializer = HostingSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(owner=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -49,7 +48,6 @@ class HostingDetail(APIView):
     * Only safe method is available for who is not owner.
     """
     permission_classes = (IsOwnerOrReadOnly,)
-    authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
         obj = get_object_or_404(Hosting, pk=pk)
