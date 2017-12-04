@@ -5,7 +5,7 @@ from random import randint
 from django.core.files import File
 
 from member.models import User
-from .models import Hosting, HostingReview, Photo
+from ...models.hosting import Hosting, HostingReview, Photo
 
 
 class HostingModelTest(unittest.TestCase):
