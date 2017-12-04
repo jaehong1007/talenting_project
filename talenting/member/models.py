@@ -1,6 +1,10 @@
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from rest_framework.authtoken.models import Token
 
 
 class MyUserManager(BaseUserManager):
@@ -60,6 +64,10 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
 
+    @property
+    def token(self):
+        return Token.objects.get_or_create(user=self)[0].key
+
     def __str__(self):
         return self.email
 
@@ -110,15 +118,33 @@ class User(AbstractBaseUser):
         #     return float(0)
         #
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    self_intro = models.TextField()
-    my_talent = models.TextField()
-    city = models.CharField(max_length=20)
-    occupation = models.CharField(max_length=20)
-    available_languages = ArrayField(models.CharField(max_length=30))
-    profile_image = models.ImageField(upload_to='profile', null=True, blank=True)
+    birth = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=6, blank=True)
+    self_intro = models.TextField(blank=True)
+    talent_category = models.CharField(max_length=20, blank=True)
+    talent_intro = models.TextField(blank=True)
+    country = models.CharField(max_length=20, blank=True)
+    city = models.CharField(max_length=20, blank=True)
+    occupation = models.CharField(max_length=20, blank=True)
+    available_languages = ArrayField(models.CharField(max_length=30, blank=True), null=True)
+
+    @property
+    def age(self):
+        if self.birth:
+            return self.calculate_age()
+        else: return None
+
+    def calculate_age(self):
+        today = date.today()
+        delta = relativedelta(today, self.birth)
+        return str(delta.years)
+
+class ProfileImage(models.Model):
+    profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='profile', null=False )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class GuestReview(models.Model):
