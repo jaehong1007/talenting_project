@@ -1,5 +1,4 @@
 from rest_framework import status, generics, permissions
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -93,6 +92,7 @@ class PhotoList(APIView):
 class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
+
 
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.

@@ -1,10 +1,11 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .utils.pagination import EventPagination
 from .utils.permissions import IsOwnerOrReadOnly
 from member.serializer import UserSerializer
-from .serializer import EventSerializer
+from .serializer import EventSerializer, PhotoSerializer
 from .models import Event, Photo
 
 
@@ -45,17 +46,18 @@ class EventParticipateToggle(generics.GenericAPIView):
             'event': EventSerializer(instance).data,
             'result': participate_status,
         }
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
-class EventPhoto(generics.ListCreateAPIView):
+class EventPhotoList(APIView):
+    permission_classes = IsOwnerOrReadOnly
 
-    queryset = Photo.objects.all()
+    def post(self, request, format=None):
+        serializer = PhotoSerializer(data=request.DATA, files=request.FILES)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-
-
-
+    def pre_save(self, obj):
+        obj.author = self.request.user

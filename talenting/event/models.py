@@ -42,6 +42,12 @@ class Event(models.Model):
         blank=True,
         verbose_name='참여한 유저 목록'
     )
+    extra_images = models.ManyToManyField(
+        'Photo',
+        related_name='images',
+        blank=True,
+        verbose_name='추가 이미지'
+    )
 
     objects = EventManager()
 
@@ -79,3 +85,6 @@ class Photo(models.Model):
     event = models.ForeignKey(Event, related_name='event_photo')
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        super(Photo, self).save(*args, **kwargs)
