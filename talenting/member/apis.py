@@ -142,3 +142,4 @@ class ProfileImage(MyCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
+

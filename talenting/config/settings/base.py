@@ -64,7 +64,6 @@ INSTALLED_APPS = [
     'event',
     'wishlist',
     'corsheaders',
-    'imagekit',
 ]
 
 MIDDLEWARE = [
