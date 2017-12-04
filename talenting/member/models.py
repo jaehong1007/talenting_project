@@ -134,7 +134,7 @@ class Profile(models.Model):
 
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile')
+    image = models.ImageField(upload_to='profile', null=False )
     created_at = models.DateTimeField(auto_now_add=True)
 
 

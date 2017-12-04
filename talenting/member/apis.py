@@ -11,10 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from member.models import Profile, ProfileImage
-from utils.api import MyRetrieveUpdateDestroyAPIView
+from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly
-from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer
+from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
+    ProfileSerializer
 
 # from .tasks import send_mail_task
 
@@ -80,12 +81,12 @@ class LogIn(APIView):
             password=password,
         )
         if user:
-            data = LogInSerializer(user).data
-            data.update(
-                {'code': status.HTTP_201_CREATED,
+            data = {
+                'token':user.token,
+                'user':LogInSerializer(user).data,
+                'code': status.HTTP_201_CREATED,
                  'msg': ''
-                 }
-            )
+            }
             return Response(data, status=status.HTTP_200_OK)
         else:
             raise LogInException('사용자 인증 실패')
@@ -120,8 +121,18 @@ class ProfileRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     serializer_class = ProfileManageSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = ProfileSerializer(instance)
+        data = {
+            self.model_name(): serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
-class ProfileImage(generics.CreateAPIView):
+
+class ProfileImage(MyCreateAPIView):
     def get_fields_info(self):
         return 'profileimage', ProfileImageSerializer.Meta.fields
 

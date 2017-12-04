@@ -39,3 +39,16 @@ class MyRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView,
             'msg': ''
         }
         return Response(data=data, status=status.HTTP_200_OK)
+
+class MyCreateAPIView(generics.CreateAPIView, MyBaseAPIView):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        data = {
+            self.model_name():serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
