@@ -1,9 +1,10 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .utils.pagination import EventPagination
-from .utils.permissions import IsOwnerOrReadOnly
+from .utils.permissions import IsOwnerOrReadOnly, IsPhotoOwnerOrReadOnly
 from member.serializer import UserSerializer
 from .serializer import EventSerializer, PhotoSerializer
 from .models import Event, Photo
@@ -50,14 +51,21 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 
 class EventPhotoList(APIView):
-    permission_classes = IsOwnerOrReadOnly
+    """
+    List photos linked with hosting object or create a photo.
+    """
 
-    def post(self, request, format=None):
-        serializer = PhotoSerializer(data=request.DATA, files=request.FILES)
+    permission_classes = (IsPhotoOwnerOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        event = get_object_or_404(Event, pk='pk')
+        photos = event.photo_set.all()
+        serializer = PhotoSerializer(photos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = PhotoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def pre_save(self, obj):
-        obj.author = self.request.user

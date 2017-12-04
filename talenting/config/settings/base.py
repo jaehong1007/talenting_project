@@ -42,6 +42,7 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     'localhost',
     '127.0.0.1',
+    '.yabi.kr',
 ]
 
 # Application definition
@@ -76,6 +77,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3001',
+    'front.localhost:8013',
+    '.elasticbeanstalk.com',
+    'talenting-env.ap-northeast-2.elasticbeanstalk.com',
+)
 
 ROOT_URLCONF = 'config.urls'
 

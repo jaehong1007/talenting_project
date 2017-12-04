@@ -12,7 +12,7 @@ class EventSerializer(serializers.ModelSerializer):
         )
 
 
-class PhotoSerializer(serializers.HyperlinkedModelSerializer):
+class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
-        fields = ('event', 'image')
+        fields = ('pk', 'image')
