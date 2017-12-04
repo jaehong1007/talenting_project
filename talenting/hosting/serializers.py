@@ -8,7 +8,6 @@ class PhotoSerializer(serializers.ModelSerializer):
         model = Photo
         fields = (
             'pk',
-            'place',
             'hosting_image',
             'caption',
             'type',
