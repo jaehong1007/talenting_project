@@ -7,4 +7,4 @@ ALLOWED_HOSTS = [
     '.yabi.kr',
 ]
 
-DATABASES = config_secret_common['django']['databases']
+DATABASES = config_secret_local['django']['databases']

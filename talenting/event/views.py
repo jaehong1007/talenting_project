@@ -2,8 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import FormView
 
-from .forms import EventForm, CommentForm
+from .forms import EventForm, CommentForm, ImageFieldForm
 from .models import Event
 
 

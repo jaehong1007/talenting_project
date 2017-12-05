@@ -1,6 +1,15 @@
 from rest_framework import serializers
 
-from .models import User, Profile
+from .models import Profile, ProfileImage
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'email')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -27,23 +36,38 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class LogInSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = ('pk', 'email', 'password')
-        read_only_fields = ('password',)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class ProfileManageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('pk', 'email', 'password', 'self_intro', 'my_talent', 'city',
-                  'occupation', 'available_languages', 'profile_image')
-        read_only_fields = ('password',)
+        model = Profile
+        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation', 'available_languages', 'age')
+        read_only_fields = ('user', 'age',)
+
+
+class ProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ('pk', 'image', 'created_at')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    images = ProfileImageSerializer(many=True)
+    age = serializers.SerializerMethodField('_calculate_age')
+
+    def _calculate_age(self, obj):
+        if obj.birth:
+            return obj.calculate_age()
+        return None
+
     class Meta:
         model = Profile
-        fields = ('user', 'self_intro', 'my_talent', 'city', 'occupation',
-                  'available_languages', 'profile_image')
-        read_only_fields = ('user',)
+        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation',
+                  'available_languages', 'images', 'age')

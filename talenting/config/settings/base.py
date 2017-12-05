@@ -17,9 +17,9 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
-
+CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
-
+config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
@@ -29,6 +29,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR
 ]
+STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -44,6 +45,8 @@ ALLOWED_HOSTS = [
 
 # Application definition
 INSTALLED_APPS = [
+    'jet.dashboard',
+    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -100,6 +103,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -140,3 +144,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+# jet 설정
+JET_SIDE_MENU_COMPACT = True

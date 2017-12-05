@@ -17,6 +17,7 @@ django-appconf==1.0.2
 django-cors-headers==2.1.0
 django-extensions==1.9.1
 django-imagekit==4.0.2
+django-jet==1.0.6
 django-storages==1.6.5
 djangorestframework==3.7.3
 docker-py==1.7.2
@@ -48,7 +49,10 @@ raven==6.3.0
 requests==2.9.1
 s3transfer==0.1.11
 semantic-version==2.5.0
+Serializer==0.2.1
+serializers==0.2.4
 simplegeneric==0.8.1
+simplejson==3.13.2
 six==1.11.0
 tabulate==0.7.5
 termcolor==1.1.0
