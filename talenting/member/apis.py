@@ -6,14 +6,16 @@ from django.contrib.auth import authenticate
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics
+from rest_framework.exceptions import APIException
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from member.models import Profile, ProfileImage
-from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView
+from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView
 from utils.exception.api_exception import LogInException
-from utils.permissions import IsAuthorOrReadOnly
+from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer
 
@@ -23,9 +25,6 @@ User = get_user_model()
 
 
 class SignUp(APIView):
-
-    def get_fields_info(self):
-        return 'user', SignUpSerializer.Meta.fields
 
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
@@ -69,9 +68,6 @@ class SignUp(APIView):
 
 class LogIn(APIView):
 
-    def get_fields_info(self):
-        return 'user', LogInSerializer.Meta.fields
-
     def post(self, request, *args, **kwargs):
         email = request.data['email']
         password = request.data['password']
@@ -82,10 +78,10 @@ class LogIn(APIView):
         )
         if user:
             data = {
-                'token':user.token,
-                'user':LogInSerializer(user).data,
+                'token': user.token,
+                'user': LogInSerializer(user).data,
                 'code': status.HTTP_201_CREATED,
-                 'msg': ''
+                'msg': ''
             }
             return Response(data, status=status.HTTP_200_OK)
         else:
@@ -113,10 +109,7 @@ class EmailIsUnique(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class ProfileRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
-    def get_fields_info(self):
-        return 'profile', ProfileManageSerializer.Meta.fields
-
+class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileManageSerializer
     permission_classes = (IsAuthorOrReadOnly,)
@@ -132,14 +125,30 @@ class ProfileRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class ProfileImage(MyCreateAPIView):
-    def get_fields_info(self):
-        return 'profileimage', ProfileImageSerializer.Meta.fields
-
+class ProfileImageCreate(MyCreateAPIView):
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
     permission_classes = (IsAuthenticated,)
 
+    def create(self, request, *args, **kwargs):
+        if str(request.user.pk) != self.kwargs['pk']:
+            raise APIException('다른 사람의 프로필을 수정할 수 없습니다.')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        data = {
+            self.model_name(): serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
 
+
+class ProfileImageUpdateDelete(MyRetrieveUpdateDestroyAPIView):
+    queryset = ProfileImage.objects.all()
+    serializer_class = ProfileImageSerializer
+    permission_classes = (IsProfileUserOrReadOnly,)
