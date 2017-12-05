@@ -31,7 +31,6 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
-
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
 MEDIA_URL = '/media/'
@@ -86,7 +85,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'utils.exception.handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'utils.exception.custom_exception_handler',
 }
 
 # Template
@@ -146,5 +145,5 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-#jet 설정
+# jet 설정
 JET_SIDE_MENU_COMPACT = True
