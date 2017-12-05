@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status, generics, permissions
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
 from rest_framework.generics import get_object_or_404
@@ -23,13 +24,17 @@ class HostingPagination(PageNumberPagination):
 class HostingList(APIView):
     """
     List hosting posts or create a hosting post.
+
+    * Authenticate with token.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
     """
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
         hostings = Hosting.objects.all()
         serializer = HostingSerializer(hostings, many=True)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -39,17 +44,16 @@ class HostingList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_model_name(self):
-        return 'hosting'
-
 
 class HostingDetail(APIView):
     """
     Retrieve, update and delete a hosting post.
 
+    * Authenticate with token.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -60,7 +64,6 @@ class HostingDetail(APIView):
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
@@ -76,15 +79,12 @@ class HostingDetail(APIView):
         hosting.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_model_name(self):
-        return 'hosting'
-
 
 class PhotoList(APIView):
     """
     List photos linked with hosting object or create a photo.
     """
-    # authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -200,8 +200,7 @@ class HostingReviewDetail(APIView):
         return 'review'
 
 # class HostingList(generics.ListCreateAPIView):
-
-# """
+#     """
 #     List hosting post or create a new hosting post
 #     """
 #     queryset = Hosting.objects.all()
@@ -212,7 +211,6 @@ class HostingReviewDetail(APIView):
 #
 #     def perform_create(self, serializer):
 #         serializer.save(owner=self.request.user)
-
 
 # class HostingDetail(generics.RetrieveUpdateDestroyAPIView):
 #     """
