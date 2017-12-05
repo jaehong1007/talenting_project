@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from rest_framework import status, generics, permissions
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
 from rest_framework.generics import get_object_or_404
@@ -11,17 +10,12 @@ from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
 from .serializers import HostingSerializer, PhotoSerializer, HostingReviewSerializer
 from .models.hosting import Hosting, Photo, HostingReview
+from .paginator import Paginator, HostingPagination
 
 User = get_user_model()
 
 
-class HostingPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-
-class HostingList(APIView):
+class HostingList(APIView, Paginator):
     """
     List hosting posts or create a hosting post.
 
@@ -31,9 +25,15 @@ class HostingList(APIView):
     """
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsOwnerOrReadOnly,)
+    pagination_class = HostingPagination
 
     def get(self, request, *args, **kwargs):
         hostings = Hosting.objects.all()
+        page = self.paginate_queryset(hostings)
+        if page is not None:
+            serializer = HostingSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = HostingSerializer(hostings, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,12 +62,12 @@ class HostingDetail(APIView):
         return obj
 
     def get(self, request, *args, **kwargs):
-        hosting = self.get_object(kwargs['hosting_pk'])
+        hosting = self.get_object(pk=kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
-        hosting = self.get_object(kwargs['hosting_pk'])
+        hosting = self.get_object(pk=kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -75,7 +75,7 @@ class HostingDetail(APIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        hosting = self.get_object(kwargs['hosting_pk'])
+        hosting = self.get_object(pk=kwargs['hosting_pk'])
         hosting.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -83,6 +83,10 @@ class HostingDetail(APIView):
 class PhotoList(APIView):
     """
     List photos linked with hosting object or create a photo.
+
+    * Authenticate with token.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
     """
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
@@ -109,10 +113,11 @@ class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
 
+    * Authenticate with token.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    # authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -121,12 +126,12 @@ class PhotoDetail(APIView):
         return obj
 
     def get(self, request, *args, **kwargs):
-        photo = self.get_object(kwargs['photo_pk'])
+        photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = PhotoSerializer(photo)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
-        photo = self.get_object(kwargs['photo_pk'])
+        photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = PhotoSerializer(photo, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -134,16 +139,20 @@ class PhotoDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        photo = self.get_object(kwargs['photo_pk'])
+        photo = self.get_object(pk=kwargs['photo_pk'])
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_model_name(self):
-        return 'photo'
-
 
 class HostingReviewList(APIView):
-    # authentication_classes = (TokenAuthentication,)
+    """
+    List hosting reviews linked with hosting post or create a hosting review.
+
+    * Authenticate with token.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
+    """
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -165,12 +174,16 @@ class HostingReviewList(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_model_name(self):
-        return 'review'
-
 
 class HostingReviewDetail(APIView):
-    # authentication_classes = (TokenAuthentication,)
+    """
+    Retrieve, update, delete a hosting review.
+
+    * Authenticate with token.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
+    """
+    authentication_classes = (TokenAuthentication,)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -195,9 +208,6 @@ class HostingReviewDetail(APIView):
         review = self.get_object(pk=kwargs['review_pk'])
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def get_model_name(self):
-        return 'review'
 
 # class HostingList(generics.ListCreateAPIView):
 #     """
