@@ -15,6 +15,3 @@ def custom_exception_handler(exc, context):
             'msg': error
         }
     return response
-
-
-

@@ -5,10 +5,8 @@ from django.contrib.auth import authenticate
 # from django.utils.encoding import force_bytes
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
-from rest_framework import status, generics
-from rest_framework.exceptions import APIException
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -110,6 +108,7 @@ class EmailIsUnique(APIView):
 
 
 class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = Profile.objects.all()
     serializer_class = ProfileManageSerializer
     permission_classes = (IsAuthorOrReadOnly,)
@@ -126,29 +125,16 @@ class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
 
 
 class ProfileImageCreate(MyCreateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def create(self, request, *args, **kwargs):
-        if str(request.user.pk) != self.kwargs['pk']:
-            raise APIException('다른 사람의 프로필을 수정할 수 없습니다.')
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        data = {
-            self.model_name(): serializer.data,
-            'code': status.HTTP_200_OK,
-            'msg': ''
-        }
-        return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         serializer.save(profile=self.request.user.profile)
 
 
-class ProfileImageUpdateDelete(MyRetrieveUpdateDestroyAPIView):
+class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
     permission_classes = (IsProfileUserOrReadOnly,)
