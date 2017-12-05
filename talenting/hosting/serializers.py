@@ -1,20 +1,41 @@
-from rest_framework import serializers
+from rest_framework import serializers, response, status
 
-from .models import Hosting, Photo, HostingReview
+from .models.hosting import Hosting, Photo, HostingReview
+
+
+# class HostingListSerializer(serializers.ListSerializer):
+#     @property
+#     def data(self):
+#         serialized_data = super(HostingListSerializer, self).data
+#         custom_representation = {
+#             'hosting': serialized_data,
+#             'code': response.status_code,
+#             'msg': '',
+#         }
+#         return custom_representation
 
 
 class PhotoSerializer(serializers.ModelSerializer):
+    pk = serializers.ReadOnlyField()
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Photo
         fields = (
             'pk',
-            'image',
+            'place',
+            'hosting_image',
             'caption',
             'type',
         )
 
 
 class HostingReviewSerializer(serializers.ModelSerializer):
+    pk = serializers.ReadOnlyField()
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
+    host = serializers.PrimaryKeyRelatedField(read_only=True)
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = HostingReview
         fields = (
@@ -22,15 +43,15 @@ class HostingReviewSerializer(serializers.ModelSerializer):
             'author',
             'host',
             'place',
-            'review',
+            'hosting_review',
             'recommend',
             'created_at',
         )
 
 
 class HostingSerializer(serializers.ModelSerializer):
-    photos = PhotoSerializer(many=True)
-    reviews = HostingReviewSerializer(many=True)
+    pk = serializers.ReadOnlyField()
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Hosting
@@ -63,12 +84,12 @@ class HostingSerializer(serializers.ModelSerializer):
             'street',
             'address',
             'postcode',
-            'lat',
-            'lon',
-            'active',
+            'min_lat',
+            'max_lat',
+            'min_lon',
+            'max_lon',
             'published',
             'created_at',
             'updated_at',
-            'photos',
-            'reviews',
         )
+        # list_serializer_class = HostingListSerializer

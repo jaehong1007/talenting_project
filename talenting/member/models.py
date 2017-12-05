@@ -107,8 +107,6 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-
-
         # def get_user_average_rating(self):
         #     '''유저 레이팅의 평균을 소수점으로 반환'''
         #     user_reviews = self.user_review_about_guest.filter(guest=self)
@@ -117,6 +115,7 @@ class User(AbstractBaseUser):
         #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
         #     return float(0)
         #
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -134,16 +133,20 @@ class Profile(models.Model):
     def age(self):
         if self.birth:
             return self.calculate_age()
-        else: return None
+        else:
+            return None
 
     def calculate_age(self):
+        '''모델에 birth 필드가 들어온 경우에 나이를 계산,
+        birth 필드가 없으면 기본적으로는 null값'''
         today = date.today()
         delta = relativedelta(today, self.birth)
         return str(delta.years)
 
+
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile', null=False )
+    image = models.ImageField(upload_to='profile', null=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
