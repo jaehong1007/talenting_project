@@ -15,7 +15,7 @@ from .paginator import Paginator, HostingPagination
 User = get_user_model()
 
 
-class HostingList(APIView, Paginator):
+class HostingList(APIView):
     """
     List hosting posts or create a hosting post.
 
@@ -25,23 +25,27 @@ class HostingList(APIView, Paginator):
     """
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsOwnerOrReadOnly,)
-    pagination_class = HostingPagination
 
     def get(self, request, *args, **kwargs):
         hostings = Hosting.objects.all()
-        page = self.paginate_queryset(hostings)
-        if page is not None:
-            serializer = HostingSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
         serializer = HostingSerializer(hostings, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         serializer = HostingSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(owner=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            data = {
+                'hosting': serializer.data,
+                'code': 201,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -64,14 +68,24 @@ class HostingDetail(APIView):
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data = {
+                'hosting': serializer.data,
+                'code': 200,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
@@ -95,18 +109,25 @@ class PhotoList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         photos = hosting.photo_set.all()
         serializer = PhotoSerializer(photos, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         serializer = PhotoSerializer(data=request.data)
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         if serializer.is_valid(raise_exception=True):
             serializer.save(place=hosting)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            data = {
+                'hosting': serializer.data,
+                'code': 201,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_model_name(self):
-        return 'photo'
 
 
 class PhotoDetail(APIView):
@@ -128,14 +149,24 @@ class PhotoDetail(APIView):
     def get(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = PhotoSerializer(photo)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = PhotoSerializer(photo, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data = {
+                'hosting': serializer.data,
+                'code': 200,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
@@ -159,7 +190,12 @@ class HostingReviewList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         reviews = hosting.hostingreview_set.all()
         serializer = HostingReviewSerializer(reviews, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
@@ -171,7 +207,12 @@ class HostingReviewList(APIView):
                 host=host,
                 place=hosting,
             )
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data = {
+                'hosting': serializer.data,
+                'code': 200,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -194,15 +235,25 @@ class HostingReviewDetail(APIView):
     def get(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
         serializer = HostingReviewSerializer(review)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
-        serialzier = HostingReviewSerializer(review, data=request.data)
-        if serialzier.is_valid(raise_exception=True):
-            serialzier.save()
-            return Response(serialzier.data, status=status.HTTP_200_OK)
-        return Response(serialzier.data, status=status.HTTP_400_BAD_REQUEST)
+        serializer = HostingReviewSerializer(review, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            data = {
+                'hosting': serializer.data,
+                'code': 200,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])

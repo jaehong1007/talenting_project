@@ -1,13 +1,29 @@
-from rest_framework import serializers
+from rest_framework import serializers, response, status
 
 from .models.hosting import Hosting, Photo, HostingReview
 
 
+# class HostingListSerializer(serializers.ListSerializer):
+#     @property
+#     def data(self):
+#         serialized_data = super(HostingListSerializer, self).data
+#         custom_representation = {
+#             'hosting': serialized_data,
+#             'code': response.status_code,
+#             'msg': '',
+#         }
+#         return custom_representation
+
+
 class PhotoSerializer(serializers.ModelSerializer):
+    pk = serializers.ReadOnlyField()
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Photo
         fields = (
             'pk',
+            'place',
             'hosting_image',
             'caption',
             'type',
@@ -15,6 +31,11 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class HostingReviewSerializer(serializers.ModelSerializer):
+    pk = serializers.ReadOnlyField()
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
+    host = serializers.PrimaryKeyRelatedField(read_only=True)
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = HostingReview
         fields = (
@@ -29,10 +50,14 @@ class HostingReviewSerializer(serializers.ModelSerializer):
 
 
 class HostingSerializer(serializers.ModelSerializer):
+    pk = serializers.ReadOnlyField()
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Hosting
         fields = (
             'pk',
+            'owner',
             'category',
             'title',
             'summary',
@@ -67,11 +92,4 @@ class HostingSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
-
-
-        # class HostingListSerializer(serializers.ListSerializer):
-        #     @property
-        #     def data(self):
-        #         serialized_data = super(HostingListSerializer, self).data
-        #         custom_representation = {'hosting': serialized_data}
-        #         return custom_representation
+        # list_serializer_class = HostingListSerializer
