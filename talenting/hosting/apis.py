@@ -1,9 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
-<<<<<<< HEAD
-=======
+
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
->>>>>>> 586d914524b53cdb75a51e647cd4a9967bfc75ea
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -137,11 +135,8 @@ class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
 
-<<<<<<< HEAD
 
-=======
     * Authenticate with token.
->>>>>>> 586d914524b53cdb75a51e647cd4a9967bfc75ea
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """

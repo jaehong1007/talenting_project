@@ -10,14 +10,45 @@ from .serializer import EventSerializer, PhotoSerializer
 from .models import Event, Photo
 
 
-class EventList(generics.ListCreateAPIView):
+class EventList(APIView):
+    """
+    List hosting posts or create a hosting post.
 
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
-    pagination_class = EventPagination
+    * Authenticate with token.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get(self, request, *args, **kwargs):
+        events = Event.objects.all()
+        serializer = EventSerializer(events, many=True)
+        data = {
+            'event': serializer.data,
+            'code': 200,
+            'msg': 'OK',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(owner=request.user)
+            data = {
+                'hosting': serializer.data,
+                'code': 201,
+                'msg': 'CREATED',
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+# class EventList(generics.ListCreateAPIView):
+#
+#     queryset = Event.objects.all()
+#     serializer_class = EventSerializer
+#     pagination_class = EventPagination
+#
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user)
 
 
 class EventDetail(generics.RetrieveUpdateDestroyAPIView):
