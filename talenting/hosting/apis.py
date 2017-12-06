@@ -29,6 +29,7 @@ class HostingList(APIView):
     def get(self, request, *args, **kwargs):
         hostings = Hosting.objects.all()
         serializer = HostingSerializer(hostings, many=True)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -40,6 +41,7 @@ class HostingList(APIView):
         serializer = HostingSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(owner=request.user)
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 201,
@@ -68,6 +70,7 @@ class HostingDetail(APIView):
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
         serializer = HostingSerializer(hosting)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -80,6 +83,7 @@ class HostingDetail(APIView):
         serializer = HostingSerializer(hosting, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 200,
@@ -109,6 +113,7 @@ class PhotoList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         photos = hosting.photo_set.all()
         serializer = PhotoSerializer(photos, many=True)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -121,6 +126,7 @@ class PhotoList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         if serializer.is_valid(raise_exception=True):
             serializer.save(place=hosting)
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 201,
@@ -149,6 +155,7 @@ class PhotoDetail(APIView):
     def get(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = PhotoSerializer(photo)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -161,6 +168,7 @@ class PhotoDetail(APIView):
         serializer = PhotoSerializer(photo, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 200,
@@ -190,6 +198,7 @@ class HostingReviewList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         reviews = hosting.hostingreview_set.all()
         serializer = HostingReviewSerializer(reviews, many=True)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -207,6 +216,7 @@ class HostingReviewList(APIView):
                 host=host,
                 place=hosting,
             )
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 200,
@@ -235,6 +245,7 @@ class HostingReviewDetail(APIView):
     def get(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
         serializer = HostingReviewSerializer(review)
+        # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -247,6 +258,7 @@ class HostingReviewDetail(APIView):
         serializer = HostingReviewSerializer(review, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            # This is hard coding for API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 200,
