@@ -85,7 +85,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'utils.exception.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'utils.exception.handler.custom_exception_handler',
 }
 
 # Template

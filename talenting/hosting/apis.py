@@ -115,7 +115,7 @@ class PhotoList(APIView):
         serializer = PhotoSerializer(photos, many=True)
         # This is hard coding for API structure for Android.
         data = {
-            'hosting': serializer.data,
+            'hosting_photo': serializer.data,
             'code': 200,
             'msg': '',
         }
@@ -128,7 +128,7 @@ class PhotoList(APIView):
             serializer.save(place=hosting)
             # This is hard coding for API structure for Android.
             data = {
-                'hosting': serializer.data,
+                'hosting_photo': serializer.data,
                 'code': 201,
                 'msg': '',
             }
@@ -157,7 +157,7 @@ class PhotoDetail(APIView):
         serializer = PhotoSerializer(photo)
         # This is hard coding for API structure for Android.
         data = {
-            'hosting': serializer.data,
+            'hosting_photo': serializer.data,
             'code': 200,
             'msg': '',
         }
@@ -170,7 +170,7 @@ class PhotoDetail(APIView):
             serializer.save()
             # This is hard coding for API structure for Android.
             data = {
-                'hosting': serializer.data,
+                'hosting_photo': serializer.data,
                 'code': 200,
                 'msg': '',
             }
@@ -200,7 +200,7 @@ class HostingReviewList(APIView):
         serializer = HostingReviewSerializer(reviews, many=True)
         # This is hard coding for API structure for Android.
         data = {
-            'hosting': serializer.data,
+            'hosting_review': serializer.data,
             'code': 200,
             'msg': '',
         }
@@ -218,7 +218,7 @@ class HostingReviewList(APIView):
             )
             # This is hard coding for API structure for Android.
             data = {
-                'hosting': serializer.data,
+                'hosting_review': serializer.data,
                 'code': 200,
                 'msg': '',
             }
@@ -247,7 +247,7 @@ class HostingReviewDetail(APIView):
         serializer = HostingReviewSerializer(review)
         # This is hard coding for API structure for Android.
         data = {
-            'hosting': serializer.data,
+            'hosting_review': serializer.data,
             'code': 200,
             'msg': '',
         }
@@ -260,7 +260,7 @@ class HostingReviewDetail(APIView):
             serializer.save()
             # This is hard coding for API structure for Android.
             data = {
-                'hosting': serializer.data,
+                'hosting_review': serializer.data,
                 'code': 200,
                 'msg': '',
             }
