@@ -107,8 +107,6 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-
-
         # def get_user_average_rating(self):
         #     '''유저 레이팅의 평균을 소수점으로 반환'''
         #     user_reviews = self.user_review_about_guest.filter(guest=self)
@@ -139,6 +137,8 @@ class Profile(models.Model):
             return None
 
     def calculate_age(self):
+        '''모델에 birth 필드가 들어온 경우에 나이를 계산,
+        birth 필드가 없으면 기본적으로는 null값'''
         today = date.today()
         delta = relativedelta(today, self.birth)
         return str(delta.years)
