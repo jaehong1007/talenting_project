@@ -27,6 +27,7 @@ class PhotoSerializer(serializers.ModelSerializer):
             'hosting_image',
             'caption',
             'type',
+            'created_at',
         )
 
 
