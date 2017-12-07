@@ -226,3 +226,6 @@ class HostingDetailViewTest(APITestCase):
         response = self.client.delete(f'/hosting/{hosting_pk}/')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+# class PhotoListViewTest(APITestCase):
