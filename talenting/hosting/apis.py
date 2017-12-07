@@ -80,7 +80,7 @@ class HostingDetail(APIView):
 
     def put(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
-        serializer = HostingSerializer(hosting, data=request.data)
+        serializer = HostingSerializer(hosting, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             # This is hard coding for API structure for Android.
@@ -165,7 +165,7 @@ class PhotoDetail(APIView):
 
     def put(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
-        serializer = PhotoSerializer(photo, data=request.data)
+        serializer = PhotoSerializer(photo, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             # This is hard coding for API structure for Android.
@@ -255,7 +255,7 @@ class HostingReviewDetail(APIView):
 
     def put(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
-        serializer = HostingReviewSerializer(review, data=request.data)
+        serializer = HostingReviewSerializer(review, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             # This is hard coding for API structure for Android.

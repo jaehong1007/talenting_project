@@ -76,7 +76,7 @@ class HostingModelTest(unittest.TestCase):
         photos = hosting.photo_set.all()  # Get all photos linked with a hosting.
         hosting.get_primary_photo()
 
-        # Check number of created photos and primary_photo.
+        # Check the number of created photos and primary_photo.
         self.assertEqual(photos.count(), num)
         self.assertEqual(hosting.primary_photo, photos[0].hosting_image)
 
@@ -89,6 +89,7 @@ class HostingModelTest(unittest.TestCase):
         )
         host = User.objects.get(email='garson1362@gmail.com')
         hosting = Hosting.objects.get(owner=host)
+
         num = randint(0, 10)
         for i in range(num):
             HostingReview.objects.create(
@@ -98,4 +99,5 @@ class HostingModelTest(unittest.TestCase):
             )
         hosting.get_recommend_counter()
 
+        # Check the number of recommend.
         self.assertEqual(hosting.recommend_counter, num)

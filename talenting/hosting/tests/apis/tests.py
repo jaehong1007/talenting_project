@@ -1,12 +1,38 @@
 import io
 from django.core.files import File
 from django.urls import resolve
+from model_mommy import mommy
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from hosting.models.hosting import Hosting
 from member.models import User
+
+
+def make_user():
+    return mommy.make('member.User')
+
+
+def make_hosting(user):
+    return mommy.make('hosting.Hosting', owner=user)
+
+
+def make_hosting_review(user, host, hosting):
+    return mommy.make(
+        'hosting.HostingReview',
+        author=user,
+        host=host,
+        place=hosting,
+    )
+
+
+def make_hosting_photo(hosting, image):
+    return mommy.make(
+        'hosting.Photo',
+        place=hosting,
+        hosting_image=image,
+    )
 
 
 class HostingListViewTest(APITestCase):
@@ -228,4 +254,4 @@ class HostingDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
-# class PhotoListViewTest(APITestCase):
+        # class PhotoListViewTest(APITestCase):
