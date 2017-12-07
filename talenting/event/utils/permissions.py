@@ -13,4 +13,4 @@ class IsPhotoOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return obj.place.owner == request.user
+        return obj.event.author == request.user

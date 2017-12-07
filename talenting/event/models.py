@@ -42,12 +42,7 @@ class Event(models.Model):
         blank=True,
         verbose_name='참여한 유저 목록'
     )
-    extra_images = models.ManyToManyField(
-        'Photo',
-        related_name='images',
-        blank=True,
-        verbose_name='추가 이미지'
-    )
+    participants_count = models.IntegerField(default=0, editable=False)
 
     objects = EventManager()
 
@@ -57,13 +52,17 @@ class Event(models.Model):
     def __str__(self):
         return f'{self.title}'
 
-    def get_participant_counter(self):
-        participants = self.participants.all()
-        count = 0
-        for user in participants:
-            if user.participants:
-                count += 1
-        self.particiapnts_counter = count
+    def get_photos(self):
+        photos = self.photo_set.all()
+        return photos
+
+    def participants_counter(self):
+        participants = self.participants
+        self.participants_count = participants
+
+    def save(self, *args, **kwargs):
+        self.participants_counter()
+        super(Event, self).save(*args, **kwargs)
 
 
 class EventComment(models.Model):
@@ -82,9 +81,10 @@ class EventComment(models.Model):
 
 
 class Photo(models.Model):
-    event = models.ForeignKey(Event, related_name='event_photo')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         super(Photo, self).save(*args, **kwargs)
+
