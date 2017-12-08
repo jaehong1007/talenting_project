@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFill
 
@@ -11,7 +12,7 @@ User = get_user_model()
 
 class HostingManager(models.Model):
     def get_queryset(self):
-        return super().get_queryset().exclude(owner=None)
+        result = super().get_queryset().exclude(owner=None)
 
 
 class Hosting(models.Model):
@@ -104,6 +105,8 @@ class Hosting(models.Model):
 
     class Meta:
         ordering = ['-has_photo', '-recommend_counter']
+
+    object = HostingManager()
 
 
 class Photo(models.Model):

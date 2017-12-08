@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status, generics, permissions
+from django.db.models import Q
+from rest_framework import status, generics, permissions, models
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -26,9 +27,18 @@ class HostingList(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsOwnerOrReadOnly,)
 
+    def get_queryset(self):
+        queryset = Hosting.objects.all()
+        search_query = self.request.query_params.get('search_query', None)
+        if search_query is not None:
+            queryset = queryset.filter(
+                Q(address__icontains=search_query)
+            )
+        return queryset
+
     def get(self, request, *args, **kwargs):
-        hostings = Hosting.objects.all()
-        serializer = HostingSerializer(hostings, many=True)
+        queryset = self.get_queryset()
+        serializer = HostingSerializer(queryset, many=True)
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
