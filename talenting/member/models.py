@@ -7,6 +7,7 @@ from django.db import models
 from rest_framework.authtoken.models import Token
 
 
+
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password, first_name, last_name):
         if not email:
@@ -53,7 +54,9 @@ class User(AbstractBaseUser):
     # TimeStamp
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # 유저의 추가정보
+    # wish list
+    wish_hosting = models.ManyToManyField('hosting.Hosting')
+    wish_hosting = models.ManyToManyField('event.Event')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']

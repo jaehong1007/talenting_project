@@ -32,4 +32,4 @@ class UserActivateView(TemplateView):
             user.save()
             self.logger.info('User %s(pk=%s) has been activated.' % (user, user.pk))
 
-        return super(UserActivateView, self).get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
