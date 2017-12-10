@@ -56,7 +56,7 @@ class User(AbstractBaseUser):
     updated_at = models.DateTimeField(auto_now=True)
     # wish list
     wish_hosting = models.ManyToManyField('hosting.Hosting')
-    wish_hosting = models.ManyToManyField('event.Event')
+    wish_event = models.ManyToManyField('event.Event')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']

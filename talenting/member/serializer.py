@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from event.models import Event
+from hosting.models.hosting import Hosting
 from .models import Profile, ProfileImage, GuestReview
 from django.contrib.auth import get_user_model
 
@@ -77,3 +79,13 @@ class GuestReviewSerializer(serializers.ModelSerializer):
         model = GuestReview
         fields = ('host', 'guest', 'review', 'recommend', 'created_at')
         read_only_fields = ('host', 'guest', 'created_at')
+
+class WishHostingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hosting
+        fields = ('pk', 'owner', 'title', 'primary_photo')
+
+class WishEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ('pk', 'author', 'title', 'primary_photo')

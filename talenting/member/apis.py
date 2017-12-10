@@ -7,15 +7,18 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from event.models import Event
+from hosting.models.hosting import Hosting
 from member.models import Profile, ProfileImage, GuestReview
 from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView
 from utils.exception.api_exception import LogInException
-from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly
+from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
-    ProfileSerializer, GuestReviewSerializer
+    ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer
 
 # from .tasks import send_mail_task
 
@@ -55,12 +58,9 @@ class SignUp(APIView):
             '''
             data = {
                 'user': serializer.data,
-            }
-            message = {
                 'code': status.HTTP_201_CREATED,
                 'msg': ''
             }
-            data.update(message)
             return Response(data=data, status=status.HTTP_201_CREATED)
 
 
@@ -151,3 +151,46 @@ class GuestReviewCreate(MyListCreateAPIView):
             guest.recommendatons += 1
             guest.save()
 
+class WishListRetrieve(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def get(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        wish_hostings = user.wish_hosting.all()
+        wish_events = user.wish_event.all()
+        wish_hostings_serializer = WishHostingSerializer(wish_hostings, many=True)
+        wish_event_serializer = WishEventSerializer(wish_events, many=True)
+        data = {
+            'hosting': wish_hostings_serializer.data,
+            'event': wish_event_serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+class HostingWishListDelete(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def delete(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        selected_hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
+        user.wish_hosting.remove(selected_hosting)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class EventWishListDelete(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def delete(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        selected_event = get_object_or_404(Event, pk=kwargs['event_pk'])
+        user.wish_event.remove(selected_event)
+        return Response(status=status.HTTP_204_NO_CONTENT)

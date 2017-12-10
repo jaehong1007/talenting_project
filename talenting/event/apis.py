@@ -1,4 +1,5 @@
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 from .utils.pagination import EventPagination
@@ -53,6 +54,25 @@ class EventPhoto(generics.ListCreateAPIView):
     queryset = Photo.objects.all()
 
 
+
+class WishListAddEvent(generics.GenericAPIView):
+    queryset = Event.objects.all()
+    lookup_url_kwarg = 'event_pk'
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        if not user.wish_event.filter(pk=instance.pk).exists():
+            user.wish_event.add(instance)
+        else:
+            raise APIException('This event is already in my wish list items')
+        data = {
+            'user': user.pk,
+            'event': instance.pk,
+            'code': status.HTTP_201_CREATED,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_201_CREATED)
 
 
 
