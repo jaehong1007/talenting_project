@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.contrib.auth import authenticate
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
 # from django.contrib.sites.shortcuts import get_current_site
@@ -7,7 +10,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,9 +23,9 @@ from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetriev
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
-    ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer
+    ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer
 
-# from .tasks import send_mail_task
+from .tasks import send_mail_task
 
 User = get_user_model()
 
@@ -106,6 +111,62 @@ class EmailIsUnique(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
+class PasswordMissing(APIView):
+    def rand_name(self):
+        printable = string.printable[:62]
+        return "".join([random.choice(printable) for _ in range(10)])
+
+    def put(self, request, *args, **kwargs):
+        email = request.data['email']
+        first_name = request.data['first_name']
+        last_name = request.data['last_name']
+        user = get_object_or_404(User, email=email, first_name=first_name, last_name=last_name)
+        new_password = self.rand_name()
+        user.set_password(new_password)
+        user.save()
+        subject = 'Talenting password reset information'
+        message = f'Your password for talenting has been changed to {new_password}. You may log in with ' \
+                  f'this temporary password and change the password for later use'
+        # 실제 서비스할때는 비동기 처리 해주자
+        send_mail_task(
+            subject=subject,
+            message=message,
+            recipient=email
+        )
+        data = {
+            'user': LogInSerializer(user).data,
+            'code': status.HTTP_200_OK,
+            'msg': '',
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class PasswordReset(generics.UpdateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PasswordResetSerializer
+
+    def get_object(self):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            if not user.check_password(serializer.data.get("old_password")):
+                print(serializer.data['old_password'])
+                raise APIException('Try again with the right password')
+            user.set_password(serializer.data['new_password2'])
+            user.save()
+            data = {
+                'user':user,
+                'code':status.HTTP_200_OK,
+                'msg': ''
+            }
+            return Response(data=data, status=status.HTTP_200_OK)
+
 class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = Profile.objects.all()
@@ -151,6 +212,7 @@ class GuestReviewCreate(MyListCreateAPIView):
             guest.recommendatons += 1
             guest.save()
 
+
 class WishListRetrieve(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)
@@ -171,6 +233,7 @@ class WishListRetrieve(APIView):
         }
         return Response(data, status=status.HTTP_200_OK)
 
+
 class HostingWishListDelete(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)
@@ -182,6 +245,7 @@ class HostingWishListDelete(APIView):
         selected_hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         user.wish_hosting.remove(selected_hosting)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class EventWishListDelete(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)

@@ -30,11 +30,21 @@ class SignUpSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return self.Meta.model.objects.create_user(
             email=validated_data['email'],
-
             password=validated_data['password2'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
         )
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password1 = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password1'] != data['new_password2']:
+            raise serializers.ValidationError('password should match')
+        return data
 
 
 class LogInSerializer(serializers.ModelSerializer):
@@ -74,16 +84,19 @@ class ProfileSerializer(serializers.ModelSerializer):
                   'talent_intro', 'country', 'city', 'occupation',
                   'available_languages', 'images', 'age')
 
+
 class GuestReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = GuestReview
         fields = ('host', 'guest', 'review', 'recommend', 'created_at')
         read_only_fields = ('host', 'guest', 'created_at')
 
+
 class WishHostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hosting
         fields = ('pk', 'owner', 'title', 'primary_photo')
+
 
 class WishEventSerializer(serializers.ModelSerializer):
     class Meta:
