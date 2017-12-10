@@ -10,12 +10,12 @@ from rest_framework.authentication import TokenAuthentication, BasicAuthenticati
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from member.models import Profile, ProfileImage
-from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView
+from member.models import Profile, ProfileImage, GuestReview
+from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
-    ProfileSerializer
+    ProfileSerializer, GuestReviewSerializer
 
 # from .tasks import send_mail_task
 
@@ -78,7 +78,7 @@ class LogIn(APIView):
             data = {
                 'token': user.token,
                 'user': LogInSerializer(user).data,
-                'code': status.HTTP_201_CREATED,
+                'code': status.HTTP_200_OK,
                 'msg': ''
             }
             return Response(data, status=status.HTTP_200_OK)
@@ -92,7 +92,6 @@ class EmailIsUnique(APIView):
         import re
         pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
         data = dict(
-            email=input_email,
             code=status.HTTP_200_OK,
             msg='사용가능한 이메일입니다.'
         )
@@ -138,3 +137,17 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
     permission_classes = (IsProfileUserOrReadOnly,)
+
+
+class GuestReviewCreate(MyListCreateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    queryset = GuestReview.objects.all()
+    serializer_class = GuestReviewSerializer
+
+    def perform_create(self, serializer):
+        guest = User.objects.get(pk=self.kwargs['pk'])
+        review = serializer.save(host=self.request.user, guest=guest)
+        if review.recommend:
+            guest.recommendatons += 1
+            guest.save()
+

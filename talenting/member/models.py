@@ -156,7 +156,6 @@ class GuestReview(models.Model):
     guest = models.ForeignKey(User, related_name='user_review_about_guest', on_delete=models.CASCADE)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
-    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Profile, ProfileImage
+from .models import Profile, ProfileImage, GuestReview
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -71,3 +71,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
                   'talent_intro', 'country', 'city', 'occupation',
                   'available_languages', 'images', 'age')
+
+class GuestReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GuestReview
+        fields = ('host', 'guest', 'review', 'recommend', 'created_at')
+        read_only_fields = ('host', 'guest', 'created_at')
