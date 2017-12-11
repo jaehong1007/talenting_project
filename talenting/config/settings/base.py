@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'event',
     'wishlist',
     'corsheaders',
+    'fcm',
 ]
 
 MIDDLEWARE = [
@@ -115,6 +116,8 @@ TEMPLATES = [
         },
     },
 ]
+
+FCM_APIKEY = "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4"
 
 WSGI_APPLICATION = 'config.wsgi.application'
 

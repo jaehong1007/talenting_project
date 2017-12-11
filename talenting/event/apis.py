@@ -4,9 +4,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.permissions import IsPlaceOwnerOrReadOnly
+from utils.permissions import IsAuthorOrReadOnly
 from .utils.pagination import EventPagination
-from .utils.permissions import IsOwnerOrReadOnly, IsPhotoOwnerOrReadOnly
 from member.serializer import UserSerializer
 from .serializer import EventSerializer, PhotoSerializer
 from .models import Event, Photo
@@ -17,6 +16,7 @@ class EventList(generics.ListCreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     pagination_class = EventPagination
+    authentication_classes = (TokenAuthentication,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -27,13 +27,15 @@ class EventDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'event_pk'
     serializer_class = EventSerializer
     permission_classes = (
-        IsOwnerOrReadOnly,
+        IsAuthorOrReadOnly,
     )
+    authentication_classes = (TokenAuthentication,)
 
 
 class EventParticipateToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'
+    authentication_classes = (TokenAuthentication,)
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -53,9 +55,9 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 
 class EventPhotoList(APIView):
-
+    queryset = Event.objects.all()
+    permission_classes = (IsAuthorOrReadOnly,)
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
         event = get_object_or_404(Event, pk=kwargs['event_pk'])
@@ -83,16 +85,9 @@ class EventPhotoList(APIView):
 
 
 class EventPhotoDetail(APIView):
-    """
-    Retrieve, update and delete a photo.
-
-
-    * Authenticate with token.
-    * Allow owner to perform any method.
-    * Only safe method is available for who is not owner.
-    """
+    queryset = Event.objects.all()
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_object(self, pk):
         obj = get_object_or_404(Photo, pk=pk)

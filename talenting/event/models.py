@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from geopy import Nominatim
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFill
 
@@ -30,19 +31,27 @@ class Event(models.Model):
         format='JPEG',
         options={'quality': 60}
         )
+
+    # Date
     opening_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
     event_date = models.DateTimeField()
-    maximum_participant = models.IntegerField(blank=True, null=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
+
+    # Participants
     participants = models.ManyToManyField(
         'member.User',
         related_name='participants',
         blank=True,
         verbose_name='참여한 유저 목록'
     )
-    participants_count = models.IntegerField(default=0, editable=False)
+    maximum_participant = models.IntegerField(blank=True, null=True, default=0)
+    participants_count = models.IntegerField(default=0, editable=False, blank=True)
+
+    # Geo Location
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     objects = EventManager()
 
@@ -61,7 +70,6 @@ class Event(models.Model):
         self.participants_count = participants
 
     def save(self, *args, **kwargs):
-        self.participants_counter()
         super(Event, self).save(*args, **kwargs)
 
 
