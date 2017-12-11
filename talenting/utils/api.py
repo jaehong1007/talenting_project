@@ -102,5 +102,9 @@ class MyCreateAPIView(BaseCreateAPIView, MyBaseAPIView):
     pass
 
 
+class MyListAPIView(BaseListAPIView, MyBaseAPIView):
+    pass
+
+
 class MyListCreateAPIView(BaseListAPIView, BaseCreateAPIView, MyBaseAPIView):
     pass

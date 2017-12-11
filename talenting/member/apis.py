@@ -19,11 +19,13 @@ from rest_framework.views import APIView
 from event.models import Event
 from hosting.models.hosting import Hosting
 from member.models import Profile, ProfileImage, GuestReview
-from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView
+from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView, \
+    MyListAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
-    ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer
+    ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
+    EventParticipateSerializer
 
 from .tasks import send_mail_task
 
@@ -212,6 +214,22 @@ class GuestReviewCreate(MyListCreateAPIView):
             guest.recommendatons += 1
             guest.save()
 
+class EventParticipateList(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def get(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        participate_event = user.participants.all()
+        serializer = EventParticipateSerializer(participate_event, many=True)
+        data = {
+            'event': serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': 'success'
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 class WishListRetrieve(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)

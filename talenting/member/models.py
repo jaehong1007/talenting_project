@@ -7,7 +7,6 @@ from django.db import models
 from rest_framework.authtoken.models import Token
 
 
-
 class MyUserManager(BaseUserManager):
     def create_user(self, email, password, first_name, last_name):
         if not email:
@@ -24,6 +23,7 @@ class MyUserManager(BaseUserManager):
         user.first_name = first_name
         user.last_name = last_name
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, password, first_name, last_name):
@@ -32,7 +32,6 @@ class MyUserManager(BaseUserManager):
 
         user.is_active = True
         user.is_admin = True
-
         user.save(using=self._db)
 
         return user
@@ -57,6 +56,7 @@ class User(AbstractBaseUser):
     # wish list
     wish_hosting = models.ManyToManyField('hosting.Hosting')
     wish_event = models.ManyToManyField('event.Event')
+    wish_user = models.ManyToManyField('self', symmetrical=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -110,22 +110,13 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-        # def get_user_average_rating(self):
-        #     '''유저 레이팅의 평균을 소수점으로 반환'''
-        #     user_reviews = self.user_review_about_guest.filter(guest=self)
-        #     if user_reviews:
-        #         user_ratings = [review.rating for review in user_reviews]
-        #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
-        #     return float(0)
-        #
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=6, blank=True)
     self_intro = models.TextField(blank=True)
-    talent_category = models.CharField(max_length=20, blank=True)
+    talent_category = ArrayField(models.CharField(max_length=20, blank=True), null=True)
     talent_intro = models.TextField(blank=True)
     country = models.CharField(max_length=20, blank=True)
     city = models.CharField(max_length=20, blank=True)

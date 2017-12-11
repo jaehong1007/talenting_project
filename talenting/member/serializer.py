@@ -56,11 +56,20 @@ class LogInSerializer(serializers.ModelSerializer):
 
 
 class ProfileManageSerializer(serializers.ModelSerializer):
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+        fields = ('first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
                   'talent_intro', 'country', 'city', 'occupation', 'available_languages', 'age')
-        read_only_fields = ('user', 'age',)
+        read_only_fields = ('age',)
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
@@ -72,17 +81,25 @@ class ProfileImageSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     images = ProfileImageSerializer(many=True)
     age = serializers.SerializerMethodField('_calculate_age')
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ('first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation',
+                  'available_languages', 'images', 'age')
 
     def _calculate_age(self, obj):
         if obj.birth:
             return obj.calculate_age()
         return None
 
-    class Meta:
-        model = Profile
-        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
-                  'talent_intro', 'country', 'city', 'occupation',
-                  'available_languages', 'images', 'age')
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
 
 class GuestReviewSerializer(serializers.ModelSerializer):
@@ -102,3 +119,6 @@ class WishEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('pk', 'author', 'title', 'primary_photo')
+
+class EventParticipateSerializer(WishEventSerializer):
+    pass
