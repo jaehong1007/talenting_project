@@ -2,9 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from imagekit.models import ImageSpecField
-from pilkit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 
-from utils.thumbnailer import Thumbnailer
 from ..options import *
 
 User = get_user_model()
@@ -12,7 +11,7 @@ User = get_user_model()
 
 class HostingManager(models.Model):
     def get_queryset(self):
-        result = super().get_queryset().exclude(owner=None)
+        return super().get_queryset().exclude(owner=None)
 
 
 class Hosting(models.Model):
@@ -21,11 +20,7 @@ class Hosting(models.Model):
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
-    primary_photo = models.ImageField(upload_to='hosting', blank=True)
-    thumbnail = ImageSpecField(source='primary_photo',
-                               processors=[ResizeToFill(100, 50)],
-                               format='JPEG',
-                               options={'quality': 85})
+    primary_photo = models.ImageField(blank=True)
     recommend_counter = models.IntegerField(blank=True, null=True)
 
     # House
@@ -68,17 +63,14 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.title
-
     def get_primary_photo(self):
-        photos = self.photo_set.all()
+        photos = self.hostingphoto_set.all()
         if photos:
-            self.primary_photo = photos[0].hosting_image
+            self.primary_photo = photos[0].hosting_thumbnail
             self.has_photo = True
 
     def get_photos(self):
-        photos = self.photo_set.all()
+        photos = self.hostingphoto_set.all()
         return photos
 
     def get_hosting_reviews(self):
@@ -92,16 +84,13 @@ class Hosting(models.Model):
                 count += 1
         self.recommend_counter = count
 
-    def create_thumbnail(self):
-        if self.primary_photo:
-            image_generator = Thumbnailer(source=self.primary_photo)
-            result = image_generator.generate()
-
     def save(self, *args, **kwargs):
         self.get_recommend_counter()
-        self.create_thumbnail()
         self.get_primary_photo()
         super(Hosting, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.owner
 
     class Meta:
         ordering = ['-has_photo', '-recommend_counter']
@@ -109,9 +98,13 @@ class Hosting(models.Model):
     object = HostingManager()
 
 
-class Photo(models.Model):
+class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
-    hosting_image = models.ImageField(upload_to='hosting')
+    hosting_image = models.ImageField(upload_to='hosting', blank=True)
+    hosting_thumbnail = ImageSpecField(source='hosting_image',
+                                        processors=[ResizeToFit(767)],
+                                        format='JPEG',
+                                        options={'quality': 85})
     caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -119,14 +112,8 @@ class Photo(models.Model):
     def __str__(self):
         return f'Photo: {self.caption}({self.type})'
 
-    def create_thumbnail(self):
-        if self.hosting_image:
-            image_generator = Thumbnailer(source=self.hosting_image)
-            result = image_generator.generate()
-
     def save(self, *args, **kwargs):
-        super(Photo, self).save(*args, **kwargs)
-        self.create_thumbnail()
+        super(HostingPhoto, self).save(*args, **kwargs)
         if self.place:
             self.place.get_primary_photo()
 

@@ -1,30 +1,20 @@
-from rest_framework import serializers, response, status
+from rest_framework import serializers
 
-from .models.hosting import Hosting, Photo, HostingReview
-
-
-# class HostingListSerializer(serializers.ListSerializer):
-#     @property
-#     def data(self):
-#         serialized_data = super(HostingListSerializer, self).data
-#         custom_representation = {
-#             'hosting': serialized_data,
-#             'code': response.status_code,
-#             'msg': '',
-#         }
-#         return custom_representation
+from .models.hosting import Hosting, HostingPhoto, HostingReview
 
 
-class PhotoSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+class HostingPhotoSerializer(serializers.ModelSerializer):
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     place = serializers.PrimaryKeyRelatedField(read_only=True)
+    hosting_thumbnail = serializers.ImageField(read_only=True)
 
     class Meta:
-        model = Photo
+        model = HostingPhoto
         fields = (
             'pk',
             'place',
             'hosting_image',
+            'hosting_thumbnail',
             'caption',
             'type',
             'created_at',
@@ -32,7 +22,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class HostingReviewSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     author = serializers.PrimaryKeyRelatedField(read_only=True)
     host = serializers.PrimaryKeyRelatedField(read_only=True)
     place = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -51,7 +41,7 @@ class HostingReviewSerializer(serializers.ModelSerializer):
 
 
 class HostingSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -95,4 +85,3 @@ class HostingSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
-        # list_serializer_class = HostingListSerializer

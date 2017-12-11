@@ -80,24 +80,24 @@ class HostingModelTest(unittest.TestCase):
         self.assertEqual(photos.count(), num)
         self.assertEqual(hosting.primary_photo, photos[0].hosting_image)
 
-    def test_get_recommend_counter_method(self):
-        user = User.objects.create_user(
-            email='Andreea@gmail.com',
-            password='password',
-            first_name='Andreea',
-            last_name='Sorian',
-        )
-        host = User.objects.get(email='garson1362@gmail.com')
-        hosting = Hosting.objects.get(owner=host)
-
-        num = randint(0, 10)
-        for i in range(num):
-            HostingReview.objects.create(
-                author=user,
-                host=host,
-                place=hosting,
-            )
-        hosting.get_recommend_counter()
-
-        # Check the number of recommend.
-        self.assertEqual(hosting.recommend_counter, num)
+    # def test_get_recommend_counter_method(self):
+    #     user = User.objects.create_user(
+    #         email='Andreea@gmail.com',
+    #         password='password',
+    #         first_name='Andreea',
+    #         last_name='Sorian',
+    #     )
+    #     host = User.objects.get(email='garson1362@gmail.com')
+    #     hosting = Hosting.objects.get(owner=host)
+    #
+    #     num = randint(0, 10)
+    #     for i in range(num):
+    #         HostingReview.objects.create(
+    #             author=user,
+    #             host=host,
+    #             place=hosting,
+    #         )
+    #     hosting.get_recommend_counter()
+    #
+    #     # Check the number of recommend.
+    #     self.assertEqual(hosting.recommend_counter, num)

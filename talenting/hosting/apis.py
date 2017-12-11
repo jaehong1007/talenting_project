@@ -9,8 +9,8 @@ from rest_framework.views import APIView
 
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
-from .serializers import HostingSerializer, PhotoSerializer, HostingReviewSerializer
-from .models.hosting import Hosting, Photo, HostingReview
+from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
+from .models.hosting import Hosting, HostingPhoto, HostingReview
 from .paginator import Paginator, HostingPagination
 
 User = get_user_model()
@@ -121,8 +121,8 @@ class PhotoList(APIView):
 
     def get(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
-        photos = hosting.photo_set.all()
-        serializer = PhotoSerializer(photos, many=True)
+        photos = hosting.hostingphoto_set.all()
+        serializer = HostingPhotoSerializer(photos, many=True)
         # This is hard coding for API structure for Android.
         data = {
             'hosting_photo': serializer.data,
@@ -132,7 +132,7 @@ class PhotoList(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        serializer = PhotoSerializer(data=request.data)
+        serializer = HostingPhotoSerializer(data=request.data)
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         if serializer.is_valid(raise_exception=True):
             serializer.save(place=hosting)
@@ -158,13 +158,13 @@ class PhotoDetail(APIView):
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
-        obj = get_object_or_404(Photo, pk=pk)
+        obj = get_object_or_404(HostingPhoto, pk=pk)
         self.check_object_permissions(self.request, obj)
         return obj
 
     def get(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
-        serializer = PhotoSerializer(photo)
+        serializer = HostingPhotoSerializer(photo)
         # This is hard coding for API structure for Android.
         data = {
             'hosting_photo': serializer.data,
@@ -175,7 +175,7 @@ class PhotoDetail(APIView):
 
     def put(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
-        serializer = PhotoSerializer(photo, data=request.data, partial=True)
+        serializer = HostingPhotoSerializer(photo, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             # This is hard coding for API structure for Android.
