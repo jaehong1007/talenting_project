@@ -62,20 +62,22 @@ class WishListAddEvent(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.wish_event.filter(pk=instance.pk).exists():
-            user.wish_event.add(instance)
-        else:
-            raise APIException('This event is already in my wish list items')
         data = {
             'user': user.pk,
             'event': instance.pk,
-            'code': status.HTTP_201_CREATED,
-            'msg': ''
         }
+        if not user.wish_event.filter(pk=instance.pk).exists():
+            user.wish_event.add(instance)
+            data.update({
+                'code': status.HTTP_201_CREATED,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_event.remove(instance)
+            data.update({
+                'code': status.HTTP_201_CREATED,
+                'msg': "Get deleted from the wish list"
+            })
         return Response(data=data, status=status.HTTP_201_CREATED)
-
-
-
-
 
 

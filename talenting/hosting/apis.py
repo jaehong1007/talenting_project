@@ -320,14 +320,20 @@ class WishListAddHosting(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.wish_hosting.filter(pk=instance.pk).exists():
-            user.wish_hosting.add(instance)
-        else:
-            raise APIException('This hosting is already in my wish list items')
         data = {
             'user': user.pk,
             'hosting': instance.pk,
-            'code': status.HTTP_201_CREATED,
-            'msg': ''
         }
+        if not user.wish_hosting.filter(pk=instance.pk).exists():
+            user.wish_hosting.add(instance)
+            data.update({
+                'code': status.HTTP_201_CREATED,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_hosting.remove(instance)
+            data.update({
+                'code': status.HTTP_201_CREATED,
+                'msg': "Get deleted from the wish list"
+            })
         return Response(data=data, status=status.HTTP_201_CREATED)

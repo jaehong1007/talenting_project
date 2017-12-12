@@ -124,6 +124,8 @@ class Profile(models.Model):
     occupation = models.CharField(max_length=20, blank=True)
     available_languages = ArrayField(models.CharField(max_length=30, blank=True), null=True)
 
+    def __str__(self):
+        return f'profile: {self.user.get_full_name()}'
     @property
     def age(self):
         if self.birth:

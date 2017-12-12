@@ -298,7 +298,7 @@ class ProfileWishListDelete(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class WishListAddHosting(generics.GenericAPIView):
+class WishListAddProfile(generics.GenericAPIView):
     queryset = Profile.objects.all()
 
     def post(self, request, *args, **kwargs):
@@ -308,15 +308,15 @@ class WishListAddHosting(generics.GenericAPIView):
             'user': user.pk,
             'hosting': instance.pk
         }
-        if not user.wish_hosting.filter(pk=instance.pk).exists():
-            user.wish_hosting.add(instance)
-            data.extend({
+        if not user.wish_profile.filter(pk=instance.pk).exists():
+            user.wish_profile.add(instance)
+            data.update({
                 'code': status.HTTP_201_CREATED,
                 'msg': 'Added on the wish list'
             })
         else:
-            user.wish_hosting.remove(instance)
-            data.extend({
+            user.wish_profile.remove(instance)
+            data.update({
                 'code': status.HTTP_201_CREATED,
                 'msg': "Get deleted from the wish list"
             })
