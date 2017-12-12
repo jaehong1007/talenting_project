@@ -2,11 +2,13 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status, generics, permissions, models
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from member.serializer import UserSerializer
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
 from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
@@ -321,3 +323,22 @@ class HostingReviewDetail(APIView):
 #     lookup_url_kwarg = 'photo_pk'
 #     serializer_class = PhotoSerializer
 #     permission_classes = (IsPhotoOwnerOrReadOnly,)
+
+class WishListAddHosting(generics.GenericAPIView):
+    queryset = Hosting.objects.all()
+    lookup_url_kwarg = 'hosting_pk'
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        if not user.wish_hosting.filter(pk=instance.pk).exists():
+            user.wish_hosting.add(instance)
+        else:
+            raise APIException('This hosting is already in my wish list items')
+        data = {
+            'user': user.pk,
+            'hosting': instance.pk,
+            'code': status.HTTP_201_CREATED,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_201_CREATED)

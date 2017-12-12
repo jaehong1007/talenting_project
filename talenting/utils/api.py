@@ -13,10 +13,34 @@ class BaseCreateAPIView(mixins.CreateModelMixin):
         headers = self.get_success_headers(serializer.data)
         data = {
             self.model_name(): serializer.data,
-            'code': status.HTTP_200_OK,
+            'code': status.HTTP_201_CREATED,
             'msg': ''
         }
         return Response(data=data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class BaseListAPIView(mixins.ListModelMixin):
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            data = {
+                self.model_name(): serializer.data,
+                'code': status.HTTP_200_OK,
+                'msg': ''
+            }
+            return self.get_paginated_response(data)
+        serializer = self.get_serializer(queryset, many=True)
+        data = {
+            self.model_name(): serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data)
 
 
 class BaseRetrieveAPIView(mixins.RetrieveModelMixin):
@@ -39,6 +63,7 @@ class BaseUpdateAPIView(mixins.UpdateModelMixin):
         return self.update(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -59,10 +84,6 @@ class MyBaseAPIView(generics.GenericAPIView):
         model = str(serializer_class.Meta.model).split('.')[-1][:-2].lower()
         return model
 
-    def get_serializer(self, *args, **kwargs):
-        kwargs['partial'] = True
-        return super().get_serializer(*args, **kwargs)
-
 
 class MyRetrieveUpdateAPIView(BaseRetrieveAPIView,
                               BaseUpdateAPIView,
@@ -78,4 +99,12 @@ class MyRetrieveUpdateDestroyAPIView(MyRetrieveUpdateAPIView,
 
 
 class MyCreateAPIView(BaseCreateAPIView, MyBaseAPIView):
+    pass
+
+
+class MyListAPIView(BaseListAPIView, MyBaseAPIView):
+    pass
+
+
+class MyListCreateAPIView(BaseListAPIView, BaseCreateAPIView, MyBaseAPIView):
     pass
