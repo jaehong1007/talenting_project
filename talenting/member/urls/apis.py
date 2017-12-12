@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from ..apis import SignUp, LogIn, EmailIsUnique, ProfileRetrieveUpdate, ProfileImageCreate, \
-    ProfileImageRetrieveUpdateDelete
+    ProfileImageRetrieveUpdateDelete, MyTripListCreateView, MyTripRetrieveUpdateDeleteView
 
 urlpatterns = [
     url(r'sign-up/$', SignUp.as_view(), name='sign-up'),
@@ -11,5 +11,7 @@ urlpatterns = [
     url(r'profile/(?P<pk>\d+)/image/$', ProfileImageCreate.as_view(), name='profile-image'),
     url(r'profile/(?P<profile_pk>\d+)/image/(?P<pk>\d+)/$', ProfileImageRetrieveUpdateDelete.as_view(),
         name='profile-image-detail'),
+    url(r'mytrip/$', MyTripListCreateView.as_view(), name='mytrip-list'),
+    url(r'mytrip/(?P<mytrip_pk>\d+)/$', MyTripRetrieveUpdateDeleteView.as_view(), name='mytrip-detail'),
 ]
 

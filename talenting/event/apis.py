@@ -9,7 +9,6 @@ from .models import Event, Photo
 
 
 class EventList(generics.ListCreateAPIView):
-
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     pagination_class = EventPagination
@@ -49,13 +48,4 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 
 class EventPhoto(generics.ListCreateAPIView):
-
     queryset = Photo.objects.all()
-
-
-
-
-
-
-
-

@@ -12,6 +12,7 @@ from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
 from .models.hosting import Hosting, HostingPhoto, HostingReview
 from .paginator import Paginator, HostingPagination
+from .countries import COUNTRIES
 
 User = get_user_model()
 

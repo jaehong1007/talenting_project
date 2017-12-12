@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models.hosting import Hosting, HostingPhoto, HostingReview
+from .countries import COUNTRIES
 
 
 class HostingPhotoSerializer(serializers.ModelSerializer):

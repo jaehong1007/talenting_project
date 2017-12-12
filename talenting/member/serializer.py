@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Profile, ProfileImage
+from .models import Profile, ProfileImage, MyTrip
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -71,3 +71,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
                   'talent_intro', 'country', 'city', 'occupation',
                   'available_languages', 'images', 'age')
+
+
+class MyTripSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = MyTrip
+        fields = ('pk', 'user', 'destination', 'arrival_date', 'departure_date',
+                  'number_travelers', 'description')

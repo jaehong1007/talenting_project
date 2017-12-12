@@ -5,17 +5,17 @@ from django.contrib.auth import authenticate
 # from django.utils.encoding import force_bytes
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from member.models import Profile, ProfileImage
+from member.models import Profile, ProfileImage, MyTrip
 from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView
 from utils.exception.api_exception import LogInException
-from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly
+from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsOwnerOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
-    ProfileSerializer
+    ProfileSerializer, MyTripSerializer
 
 # from .tasks import send_mail_task
 
@@ -23,7 +23,6 @@ User = get_user_model()
 
 
 class SignUp(APIView):
-
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -65,7 +64,6 @@ class SignUp(APIView):
 
 
 class LogIn(APIView):
-
     def post(self, request, *args, **kwargs):
         email = request.data['email']
         password = request.data['password']
@@ -137,4 +135,30 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
-    permission_classes = (IsProfileUserOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
+
+
+class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    queryset = MyTrip.objects.all()
+    serializer_class = MyTripSerializer
+    lookup_url_kwarg = 'mytrip_pk'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = MyTripSerializer(instance)
+        data = {
+            'my_trip': serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class MyTripListCreateView(generics.ListCreateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    queryset = MyTrip.objects.all()
+    serializer_class = MyTripSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from imagekit.models import ImageSpecField
@@ -32,7 +33,7 @@ class Hosting(models.Model):
     smoking = models.NullBooleanField()
     pet = models.NullBooleanField()
     rules = models.TextField(blank=True)
-    language = models.CharField(max_length=5, choices=LANGUAGES)
+    language = ArrayField(models.CharField(max_length=5, choices=LANGUAGES))
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
@@ -64,6 +65,10 @@ class Hosting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def get_primary_photo(self):
+        """
+        primary_photo is used for representing list.
+        The method is called when HostingPhoto object is created.
+        """
         photos = self.hostingphoto_set.all()
         if photos:
             self.primary_photo = photos[0].hosting_thumbnail
