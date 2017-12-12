@@ -22,7 +22,7 @@ urlpatterns = [
         name='wish-list-host-delete'),
     url(r'^profile/(?P<pk>\d+)/wish-list/profile-delete/(?P<profile_pk>\d+)/$', ProfileWishListDelete.as_view(),
         name='wish-list-host-delete'),
-    url(r'^profile/(?P<pk>\d+)/event-participate-list/$', EventParticipateList.as_view(),
+    url(r'^profile/(?P<pk>\d+)/my-event/$', EventParticipateList.as_view(),
         name='event-participate-list'),
     url(r'^profile/(?P<pk>\d+)/wish-list-toggle/$', WishListProfileToggle.as_view(), name='wish-list-add'),
 ]
