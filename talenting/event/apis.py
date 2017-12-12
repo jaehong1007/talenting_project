@@ -69,15 +69,15 @@ class WishListAddEvent(generics.GenericAPIView):
         if not user.wish_event.filter(pk=instance.pk).exists():
             user.wish_event.add(instance)
             data.update({
-                'code': status.HTTP_201_CREATED,
+                'code': status.HTTP_200_OK,
                 'msg': 'Added on the wish list'
             })
         else:
             user.wish_event.remove(instance)
             data.update({
-                'code': status.HTTP_201_CREATED,
+                'code': status.HTTP_200_OK,
                 'msg': "Get deleted from the wish list"
             })
-        return Response(data=data, status=status.HTTP_201_CREATED)
+        return Response(data=data, status=status.HTTP_200_OK)
 
 

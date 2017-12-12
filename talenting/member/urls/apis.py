@@ -24,5 +24,5 @@ urlpatterns = [
         name='wish-list-host-delete'),
     url(r'^profile/(?P<pk>\d+)/event-participate-list/$', EventParticipateList.as_view(),
         name='event-participate-list'),
-    url(r'^profile/(?P<pk>\d+)/wish-list-add/$', WishListAddProfile.as_view(), name='wish-list-add'),
+    url(r'^profile/(?P<pk>\d+)/wish-list-toggle/$', WishListAddProfile.as_view(), name='wish-list-add'),
 ]

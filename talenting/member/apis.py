@@ -311,13 +311,13 @@ class WishListAddProfile(generics.GenericAPIView):
         if not user.wish_profile.filter(pk=instance.pk).exists():
             user.wish_profile.add(instance)
             data.update({
-                'code': status.HTTP_201_CREATED,
+                'code': status.HTTP_200_OK,
                 'msg': 'Added on the wish list'
             })
         else:
             user.wish_profile.remove(instance)
             data.update({
-                'code': status.HTTP_201_CREATED,
+                'code': status.HTTP_200_OK,
                 'msg': "Get deleted from the wish list"
             })
         return Response(data=data, status=status.HTTP_200_OK)

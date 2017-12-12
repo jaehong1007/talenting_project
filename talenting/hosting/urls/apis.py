@@ -10,5 +10,5 @@ urlpatterns = [
     url(r'^(?P<hosting_pk>\d+)/photo/(?P<photo_pk>\d+)/$', PhotoDetail.as_view(), name='photo-detail'),
     url(r'^(?P<hosting_pk>\d+)/review/$', HostingReviewList.as_view(), name='review-list'),
     url(r'^(?P<hosting_pk>\d+)/review/(?P<review_pk>\d+)/$', HostingReviewDetail.as_view(), name='review-detail'),
-    url(r'^(?P<hosting_pk>\d+)/wish-list-add/$', WishListAddHosting.as_view(), name='wish-list-add'),
+    url(r'^(?P<hosting_pk>\d+)/wish-list-toggle/$', WishListAddHosting.as_view(), name='wish-list-add'),
 ]
