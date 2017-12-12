@@ -293,12 +293,11 @@ class ProfileWishListDelete(APIView):
         user = get_object_or_404(User, pk=kwargs['pk'])
         self.check_object_permissions(self.request, user)
 
-        selected_profile = get_object_or_404(Event, pk=kwargs['profile_pk'])
-        user.wish_event.remove(selected_profile)
+        selected_profile = get_object_or_404(Profile, pk=kwargs['profile_pk'])
+        user.wish_profile.remove(selected_profile)
         return Response(status=status.HTTP_200_OK)
 
-
-class WishListAddProfile(generics.GenericAPIView):
+class WishListProfileToggle(generics.GenericAPIView):
     queryset = Profile.objects.all()
 
     def post(self, request, *args, **kwargs):

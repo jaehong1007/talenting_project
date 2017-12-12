@@ -55,7 +55,7 @@ class EventPhoto(generics.ListCreateAPIView):
 
 
 
-class WishListAddEvent(generics.GenericAPIView):
+class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'
 

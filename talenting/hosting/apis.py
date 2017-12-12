@@ -313,7 +313,7 @@ class HostingReviewDetail(APIView):
 #     serializer_class = PhotoSerializer
 #     permission_classes = (IsPhotoOwnerOrReadOnly,)
 
-class WishListAddHosting(generics.GenericAPIView):
+class WishListHostingToggle(generics.GenericAPIView):
     queryset = Hosting.objects.all()
     lookup_url_kwarg = 'hosting_pk'
 
