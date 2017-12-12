@@ -109,7 +109,7 @@ class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = Profile.objects.all()
     serializer_class = ProfileManageSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsProfileUserOrReadOnly,)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -135,11 +135,13 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsProfileUserOrReadOnly,)
 
 
 class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
     queryset = MyTrip.objects.all()
     serializer_class = MyTripSerializer
     lookup_url_kwarg = 'mytrip_pk'
@@ -157,6 +159,8 @@ class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
 class MyTripListCreateView(generics.ListCreateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
     queryset = MyTrip.objects.all()
     serializer_class = MyTripSerializer
 
