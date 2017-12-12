@@ -44,11 +44,11 @@ class Hosting(models.Model):
     transportation = models.TextField(blank=True)
 
     # Address
-    country = models.CharField(max_length=2, choices=COUNTRIES)
-    city = models.CharField(max_length=10)
-    distinct = models.CharField(max_length=40)
-    street = models.CharField(max_length=60)
-    address = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=2, choices=COUNTRIES, blank=True)
+    city = models.CharField(max_length=10, blank=True)
+    distinct = models.CharField(max_length=40, blank=True)
+    street = models.CharField(max_length=60, blank=True)
+    address = models.CharField(max_length=100)
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
@@ -102,9 +102,9 @@ class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
     hosting_image = models.ImageField(upload_to='hosting', blank=True)
     hosting_thumbnail = ImageSpecField(source='hosting_image',
-                                        processors=[ResizeToFit(767)],
-                                        format='JPEG',
-                                        options={'quality': 85})
+                                       processors=[ResizeToFit(767)],
+                                       format='JPEG',
+                                       options={'quality': 85})
     caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
