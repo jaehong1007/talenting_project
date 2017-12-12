@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from imagekit.models import ImageSpecField
-from pilkit.processors import ResizeToFill
 
-from utils.thumbnailer import Thumbnailer
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
+
 from ..options import *
 
 User = get_user_model()
@@ -20,11 +21,7 @@ class Hosting(models.Model):
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
-    primary_photo = models.ImageField(upload_to='hosting', blank=True)
-    thumbnail = ImageSpecField(source='primary_photo',
-                               processors=[ResizeToFill(100, 50)],
-                               format='JPEG',
-                               options={'quality': 85})
+    primary_photo = models.ImageField(blank=True)
     recommend_counter = models.IntegerField(blank=True, null=True)
 
     # House
@@ -36,7 +33,7 @@ class Hosting(models.Model):
     smoking = models.NullBooleanField()
     pet = models.NullBooleanField()
     rules = models.TextField(blank=True)
-    language = models.CharField(max_length=5, choices=LANGUAGES)
+    language = ArrayField(models.CharField(max_length=5, choices=LANGUAGES))
     min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
     max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
 
@@ -48,11 +45,11 @@ class Hosting(models.Model):
     transportation = models.TextField(blank=True)
 
     # Address
-    country = models.CharField(max_length=2, choices=COUNTRIES)
-    city = models.CharField(max_length=10)
-    distinct = models.CharField(max_length=40)
-    street = models.CharField(max_length=60)
-    address = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=2, choices=COUNTRIES, blank=True)
+    city = models.CharField(max_length=10, blank=True)
+    distinct = models.CharField(max_length=40, blank=True)
+    street = models.CharField(max_length=60, blank=True)
+    address = models.CharField(max_length=100)
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
@@ -67,17 +64,19 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.title
-
     def get_primary_photo(self):
-        photos = self.photo_set.all()
+        """
+        primary_photo is used for representing list.
+        The method is called when HostingPhoto object is created.
+        """
+        photos = self.hostingphoto_set.all()
         if photos:
-            self.primary_photo = photos[0].hosting_image
+            self.primary_photo = photos[0].hosting_thumbnail
             self.has_photo = True
+            self.save()
 
     def get_photos(self):
-        photos = self.photo_set.all()
+        photos = self.hostingphoto_set.all()
         return photos
 
     def get_hosting_reviews(self):
@@ -91,24 +90,26 @@ class Hosting(models.Model):
                 count += 1
         self.recommend_counter = count
 
-    def create_thumbnail(self):
-        if self.primary_photo:
-            image_generator = Thumbnailer(source=self.primary_photo)
-            result = image_generator.generate()
-
     def save(self, *args, **kwargs):
         self.get_recommend_counter()
-        self.create_thumbnail()
-        self.get_primary_photo()
         super(Hosting, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.owner
 
     class Meta:
         ordering = ['-has_photo', '-recommend_counter']
 
+    object = HostingManager()
 
-class Photo(models.Model):
+
+class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
-    hosting_image = models.ImageField(upload_to='hosting')
+    hosting_image = models.ImageField(upload_to='hosting', blank=True)
+    hosting_thumbnail = ImageSpecField(source='hosting_image',
+                                       processors=[ResizeToFit(767)],
+                                       format='JPEG',
+                                       options={'quality': 85})
     caption = models.CharField(max_length=50, blank=True)
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -116,14 +117,8 @@ class Photo(models.Model):
     def __str__(self):
         return f'Photo: {self.caption}({self.type})'
 
-    def create_thumbnail(self):
-        if self.hosting_image:
-            image_generator = Thumbnailer(source=self.hosting_image)
-            result = image_generator.generate()
-
     def save(self, *args, **kwargs):
-        super(Photo, self).save(*args, **kwargs)
-        self.create_thumbnail()
+        super(HostingPhoto, self).save(*args, **kwargs)
         if self.place:
             self.place.get_primary_photo()
 

@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from event.models import Event
 from hosting.models.hosting import Hosting
-from .models import Profile, ProfileImage, GuestReview
+from .models import Profile, ProfileImage, GuestReview, MyTrip
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -122,5 +123,15 @@ class WishEventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ('pk', 'author', 'title', 'primary_photo')
 
+
 class EventParticipateSerializer(WishEventSerializer):
     pass
+
+
+class MyTripSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = MyTrip
+        fields = ('pk', 'user', 'destination', 'arrival_date', 'departure_date',
+                  'number_travelers', 'description')

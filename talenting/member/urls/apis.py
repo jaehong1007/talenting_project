@@ -2,7 +2,8 @@ from django.conf.urls import url
 
 from ..apis import SignUp, LogIn, EmailIsUnique, ProfileRetrieveUpdate, ProfileImageCreate, \
     ProfileImageRetrieveUpdateDelete, GuestReviewCreate, WishListRetrieve, HostingWishListDelete, EventWishListDelete, \
-    PasswordMissing, PasswordReset, EventParticipateList, ProfileWishListDelete, WishListProfileToggle
+    PasswordMissing, PasswordReset, EventParticipateList, ProfileWishListDelete, WishListProfileToggle, \
+    MyTripListCreateView, MyTripRetrieveUpdateDeleteView
 
 urlpatterns = [
     url(r'^sign-up/$', SignUp.as_view(), name='sign-up'),
@@ -25,4 +26,6 @@ urlpatterns = [
     url(r'^profile/(?P<pk>\d+)/my-event/$', EventParticipateList.as_view(),
         name='event-participate-list'),
     url(r'^profile/(?P<pk>\d+)/wish-list-toggle/$', WishListProfileToggle.as_view(), name='wish-list-add'),
+    url(r'mytrip/$', MyTripListCreateView.as_view(), name='mytrip-list'),
+    url(r'mytrip/(?P<mytrip_pk>\d+)/$', MyTripRetrieveUpdateDeleteView.as_view(), name='mytrip-detail'),
 ]

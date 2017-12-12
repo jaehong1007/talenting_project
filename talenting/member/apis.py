@@ -18,14 +18,14 @@ from rest_framework.views import APIView
 
 from event.models import Event
 from hosting.models.hosting import Hosting
-from member.models import Profile, ProfileImage, GuestReview
+from member.models import Profile, ProfileImage, GuestReview, MyTrip
 from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView, \
     MyListAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
-    EventParticipateSerializer
+    EventParticipateSerializer, MyTripSerializer
 
 from .tasks import send_mail_task
 
@@ -33,7 +33,6 @@ User = get_user_model()
 
 
 class SignUp(APIView):
-
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -72,7 +71,6 @@ class SignUp(APIView):
 
 
 class LogIn(APIView):
-
     def post(self, request, *args, **kwargs):
         email = request.data['email']
         password = request.data['password']
@@ -173,7 +171,7 @@ class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = Profile.objects.all()
     serializer_class = ProfileManageSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsProfileUserOrReadOnly,)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -320,3 +318,33 @@ class WishListProfileToggle(generics.GenericAPIView):
                 'msg': "Get deleted from the wish list"
             })
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    queryset = MyTrip.objects.all()
+    serializer_class = MyTripSerializer
+    lookup_url_kwarg = 'mytrip_pk'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = MyTripSerializer(instance)
+        data = {
+            'my_trip': serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': ''
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class MyTripListCreateView(generics.ListCreateAPIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    queryset = MyTrip.objects.all()
+    serializer_class = MyTripSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

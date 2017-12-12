@@ -1,12 +1,28 @@
 import io
+
+from PIL.Image import Image
 from django.core.files import File
 from django.urls import resolve
+from model_mommy import mommy
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from hosting.models.hosting import Hosting
-from member.models import User
+
+def make_user():
+    return mommy.make('member.User')
+
+
+def make_hosting():
+    return mommy.make('hosting.Hosting')
+
+
+def make_hosting_review():
+    return mommy.make('hosting.HostingReview')
+
+
+def make_hosting_photo():
+    return mommy.make('hosting.Photo')
 
 
 class HostingListViewTest(APITestCase):
@@ -14,80 +30,26 @@ class HostingListViewTest(APITestCase):
     URL_API_HOSTING_LIST_NAME = 'api:hosting:hosting-list'
     URL_API_HOSTING_LIST = '/hosting/'
 
-    @staticmethod
-    def create_user():
-        return User.objects.create_user(
-            email='host2@gmail.com',
-            password='password',
-            first_name='Tonya',
-            last_name='Ushakova',
-        )
-
-    @staticmethod
-    def create_hosting(owner):
-        return Hosting.objects.create(owner=owner)
-
     def test_hosting_list_url_name_reverse(self):
         url = reverse(self.URL_API_HOSTING_LIST_NAME)
         self.assertEqual(url, self.URL_API_HOSTING_LIST)
 
-    def test_hosting_list_resolver_match(self):
+    def test_hosting_list_url_resolver(self):
         # Resolved URL and URL name doesn't exactly match.
         resolver_match = resolve(self.URL_API_HOSTING_LIST)
         self.assertEqual(resolver_match.url_name, self.URL_API_HOSTING_LIST_NAME)
 
     def test_get_hosting_list(self):
-        user = self.create_user()
-        self.create_hosting(owner=user)
+        make_hosting()
         url = reverse(self.URL_API_HOSTING_LIST_NAME)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Response.data structure has three length of dictionary.
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(Hosting.objects.count(), 1)
 
-        hosting_data = response.data['hosting'][0]
-        self.assertIn('pk', hosting_data)
-        self.assertIn('owner', hosting_data)
-        self.assertIn('category', hosting_data)
-        self.assertIn('title', hosting_data)
-        self.assertIn('summary', hosting_data)
-        self.assertIn('primary_photo', hosting_data)
-        self.assertIn('recommend_counter', hosting_data)
-        self.assertIn('house_type', hosting_data)
-        self.assertIn('room_type', hosting_data)
-        self.assertIn('meal_type', hosting_data)
-        self.assertIn('capacity', hosting_data)
-        self.assertIn('internet', hosting_data)
-        self.assertIn('smoking', hosting_data)
-        self.assertIn('pet', hosting_data)
-        self.assertIn('rules', hosting_data)
-        self.assertIn('language', hosting_data)
-        self.assertIn('min_stay', hosting_data)
-        self.assertIn('max_stay', hosting_data)
-        self.assertIn('description', hosting_data)
-        self.assertIn('to_do', hosting_data)
-        self.assertIn('exchange', hosting_data)
-        self.assertIn('neighborhood', hosting_data)
-        self.assertIn('transportation', hosting_data)
-        self.assertIn('country', hosting_data)
-        self.assertIn('city', hosting_data)
-        self.assertIn('distinct', hosting_data)
-        self.assertIn('street', hosting_data)
-        self.assertIn('address', hosting_data)
-        self.assertIn('postcode', hosting_data)
-        self.assertIn('min_lat', hosting_data)
-        self.assertIn('max_lat', hosting_data)
-        self.assertIn('min_lon', hosting_data)
-        self.assertIn('max_lon', hosting_data)
-        self.assertIn('has_photo', hosting_data)
-        self.assertIn('published', hosting_data)
-        self.assertIn('created_at', hosting_data)
-        self.assertIn('updated_at', hosting_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
 
     def test_create_hosting(self):
-        host2 = self.create_user()
-        self.client.force_authenticate(user=host2)
+        host = make_user()
+        self.client.force_authenticate(user=host)
         response = self.client.post('/hosting/', {
             'title': 'test',
             'summary': 'test',
@@ -98,13 +60,74 @@ class HostingListViewTest(APITestCase):
             'language': 'en'
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Hosting.objects.count(), 1)
-        hosting_data = Hosting.objects.get(owner=host2)
+        self.assertEqual(len(response.data), 3)
 
-        self.assertEqual(hosting_data.title, 'test')
-        self.assertEqual(hosting_data.summary, 'test')
-        self.assertEqual(hosting_data.country, 'GB')
-        self.assertEqual(hosting_data.city, 'London')
-        self.assertEqual(hosting_data.distinct, 'Kensington')
-        self.assertEqual(hosting_data.street, 'Victoria')
-        self.assertEqual(hosting_data.language, 'en')
+
+class HostingDetailViewTest(APITestCase):
+    URL_API_HOSTING_DETAIL_NAME = 'api:hosting:hosting-detail'
+
+    def test_hosting_detail_url_name_reverse(self):
+        hosting = make_hosting()
+        url = reverse(self.URL_API_HOSTING_DETAIL_NAME, kwargs={'hosting_pk': hosting.pk})
+        self.assertEqual(url, f'/hosting/{hosting.pk}/')
+
+    def test_hosting_detail_url_resolver(self):
+        hosting = make_hosting()
+        resolver_match = resolve(f'/hosting/{hosting.pk}/')
+        self.assertEqual(resolver_match.url_name, self.URL_API_HOSTING_DETAIL_NAME)
+
+    def test_get_hosting_detail(self):
+        hosting = make_hosting()
+        url = reverse(self.URL_API_HOSTING_DETAIL_NAME, kwargs={'hosting_pk': hosting.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+
+    def test_update_hosting(self):
+        hosting = make_hosting()
+        self.client.force_authenticate(user=hosting.owner)
+        response = self.client.put(f'/hosting/{hosting.pk}/', {
+            'title': 'Seoul life',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['hosting']['title'], 'Seoul life')
+
+    def test_delete_hosting(self):
+        hosting = make_hosting()
+        self.client.force_authenticate(user=hosting.owner)
+        response = self.client.delete(f'/hosting/{hosting.pk}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class PhotoListViewTest(APITestCase):
+    URL_API_PHOTO_LIST_NAME = 'api:hosting:photo-list'
+
+    def test_photo_list_url_name_reverse(self):
+        url = reverse(self.URL_API_PHOTO_LIST_NAME, kwargs={'hosting_pk': self.hosting.pk})
+        self.assertEqual(url, f'/hosting/{hosting.pk}/photo/')
+
+    def test_photo_list_url_resolver(self):
+        hosting = make_hosting()
+        make_hosting_photo()
+        resolver_match = resolve(f'/hosting/{hosting.pk}/photo/')
+        self.assertEqual(resolver_match.url_name, self.URL_API_PHOTO_LIST_NAME)
+
+    def test_get_photo_list(self):
+        hosting = make_hosting()
+        make_hosting_photo()
+        url = reverse(self.URL_API_PHOTO_LIST_NAME, kwargs={'hosting_pk': hosting.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 3)
+
+    def test_create_photo(self):
+        hosting = make_hosting()
+        file = io.BytesIO()
+        self.client.force_authenticate(user=hosting.owner)
+        response = self.client.post(f'/hosting/{hosting.pk}/photo/', {
+            'hosting_image': file,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

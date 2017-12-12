@@ -1,16 +1,14 @@
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
+from member.serializer import UserSerializer
+from .models import Event, Photo
+from .serializer import EventSerializer
 from .utils.pagination import EventPagination
 from .utils.permissions import IsOwnerOrReadOnly
-from member.serializer import UserSerializer
-from .serializer import EventSerializer
-from .models import Event, Photo
 
 
 class EventList(generics.ListCreateAPIView):
-
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     pagination_class = EventPagination
@@ -50,7 +48,6 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 
 class EventPhoto(generics.ListCreateAPIView):
-
     queryset = Photo.objects.all()
 
 
@@ -79,5 +76,3 @@ class WishListEventToggle(generics.GenericAPIView):
                 'msg': "Get deleted from the wish list"
             })
         return Response(data=data, status=status.HTTP_200_OK)
-
-
