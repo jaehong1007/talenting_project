@@ -68,6 +68,7 @@ class Hosting(models.Model):
         if photos:
             self.primary_photo = photos[0].hosting_thumbnail
             self.has_photo = True
+            self.save()
 
     def get_photos(self):
         photos = self.hostingphoto_set.all()
@@ -86,7 +87,6 @@ class Hosting(models.Model):
 
     def save(self, *args, **kwargs):
         self.get_recommend_counter()
-        self.get_primary_photo()
         super(Hosting, self).save(*args, **kwargs)
 
     def __str__(self):
