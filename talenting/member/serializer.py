@@ -44,6 +44,8 @@ class PasswordResetSerializer(serializers.Serializer):
     def validate(self, data):
         if data['new_password1'] != data['new_password2']:
             raise serializers.ValidationError('password should match')
+        if data['old_password'] == data['new_password1']:
+            raise serializers.ValidationError('Old password and new password should be different')
         return data
 
 

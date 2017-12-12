@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from rest_framework import generics
 from rest_framework.authtoken.models import Token
 
 
@@ -56,7 +57,7 @@ class User(AbstractBaseUser):
     # wish list
     wish_hosting = models.ManyToManyField('hosting.Hosting')
     wish_event = models.ManyToManyField('event.Event')
-    wish_user = models.ManyToManyField('self', symmetrical=False)
+    wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -154,3 +155,4 @@ class GuestReview(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+

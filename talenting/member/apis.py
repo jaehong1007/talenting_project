@@ -158,16 +158,16 @@ class PasswordReset(generics.UpdateAPIView):
 
         if serializer.is_valid(raise_exception=True):
             if not user.check_password(serializer.data.get("old_password")):
-                print(serializer.data['old_password'])
                 raise APIException('Try again with the right password')
             user.set_password(serializer.data['new_password2'])
             user.save()
             data = {
-                'user':user,
-                'code':status.HTTP_200_OK,
+                'user': LogInSerializer(user).data,
+                'code': status.HTTP_200_OK,
                 'msg': ''
             }
             return Response(data=data, status=status.HTTP_200_OK)
+
 
 class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
@@ -214,6 +214,7 @@ class GuestReviewCreate(MyListCreateAPIView):
             guest.recommendatons += 1
             guest.save()
 
+
 class EventParticipateList(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)
@@ -231,6 +232,7 @@ class EventParticipateList(APIView):
         }
         return Response(data=data, status=status.HTTP_200_OK)
 
+
 class WishListRetrieve(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)
@@ -241,11 +243,16 @@ class WishListRetrieve(APIView):
 
         wish_hostings = user.wish_hosting.all()
         wish_events = user.wish_event.all()
+        wish_profiles = user.wish_profile.all()
+
         wish_hostings_serializer = WishHostingSerializer(wish_hostings, many=True)
         wish_event_serializer = WishEventSerializer(wish_events, many=True)
+        wish_profile_serializer = ProfileSerializer(wish_profiles, many=True)
+
         data = {
             'hosting': wish_hostings_serializer.data,
             'event': wish_event_serializer.data,
+            'profile': wish_profile_serializer.data,
             'code': status.HTTP_200_OK,
             'msg': ''
         }
@@ -262,7 +269,7 @@ class HostingWishListDelete(APIView):
 
         selected_hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         user.wish_hosting.remove(selected_hosting)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class EventWishListDelete(APIView):
@@ -275,4 +282,42 @@ class EventWishListDelete(APIView):
 
         selected_event = get_object_or_404(Event, pk=kwargs['event_pk'])
         user.wish_event.remove(selected_event)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
+
+
+class ProfileWishListDelete(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def delete(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        selected_profile = get_object_or_404(Event, pk=kwargs['profile_pk'])
+        user.wish_event.remove(selected_profile)
+        return Response(status=status.HTTP_200_OK)
+
+
+class WishListAddHosting(generics.GenericAPIView):
+    queryset = Profile.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        data = {
+            'user': user.pk,
+            'hosting': instance.pk
+        }
+        if not user.wish_hosting.filter(pk=instance.pk).exists():
+            user.wish_hosting.add(instance)
+            data.extend({
+                'code': status.HTTP_201_CREATED,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_hosting.remove(instance)
+            data.extend({
+                'code': status.HTTP_201_CREATED,
+                'msg': "Get deleted from the wish list"
+            })
+        return Response(data=data, status=status.HTTP_200_OK)
