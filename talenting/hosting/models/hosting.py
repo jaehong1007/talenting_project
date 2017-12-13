@@ -95,7 +95,7 @@ class Hosting(models.Model):
         super(Hosting, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.owner
+        return f'{self.owner.get_full_name()}'
 
     class Meta:
         ordering = ['-has_photo', '-recommend_counter']

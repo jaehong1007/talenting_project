@@ -25,7 +25,7 @@ from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
-    EventParticipateSerializer, MyTripSerializer
+    MyEventSerializer, MyTripSerializer
 
 from .tasks import send_mail_task
 
@@ -166,6 +166,16 @@ class PasswordReset(generics.UpdateAPIView):
             }
             return Response(data=data, status=status.HTTP_200_OK)
 
+class SignOut(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, *args, **kwargs):
+        if not request.user.check_password(request.data['password']):
+            raise APIException('Wrong password')
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
@@ -222,7 +232,7 @@ class EventParticipateList(APIView):
         self.check_object_permissions(self.request, user)
 
         participate_event = user.participants.all()
-        serializer = EventParticipateSerializer(participate_event, many=True)
+        serializer = MyEventSerializer(participate_event, many=True)
         data = {
             'event': serializer.data,
             'code': status.HTTP_200_OK,

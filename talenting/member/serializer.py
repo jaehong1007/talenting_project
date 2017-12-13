@@ -57,7 +57,6 @@ class LogInSerializer(serializers.ModelSerializer):
         model = User
         fields = ('pk', 'email', 'password')
 
-
 class ProfileManageSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
@@ -124,7 +123,7 @@ class WishEventSerializer(serializers.ModelSerializer):
         fields = ('pk', 'author', 'title', 'primary_photo')
 
 
-class EventParticipateSerializer(WishEventSerializer):
+class MyEventSerializer(WishEventSerializer):
     pass
 
 

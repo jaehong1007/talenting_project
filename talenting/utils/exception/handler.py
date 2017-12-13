@@ -5,10 +5,10 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
     if response is not None:
         status_code = response.status_code
-        for error_message in response.data.values():
+        for error_place, error_message in response.data.items():
             break
         if type(error_message) == list:
-            error = error_message[0]
+            error = f'Error occurred in {error_place}, {error_message[0]}'
         else:
             error = error_message
         response.data = {
