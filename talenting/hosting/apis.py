@@ -1,20 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from rest_framework import status, generics, permissions, models
+from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from member.serializer import UserSerializer
+from hosting.options import CATEGORIES, HOUSE_TYPES, ROOM_TYPES, MEAL_TYPES, INTERNET_TYPES, PHOTO_TYPES
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
 from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
 from .models.hosting import Hosting, HostingPhoto, HostingReview
-from .paginator import Paginator, HostingPagination
-from .countries import COUNTRIES
 
 User = get_user_model()
 
@@ -23,11 +20,11 @@ class HostingList(APIView):
     """
     List hosting posts or create a hosting post.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
@@ -68,11 +65,11 @@ class HostingDetail(APIView):
     """
     Retrieve, update and delete a hosting post.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -115,11 +112,11 @@ class PhotoList(APIView):
     """
     List photos linked with hosting object or create a photo.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -153,11 +150,11 @@ class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -200,11 +197,11 @@ class HostingReviewList(APIView):
     """
     List hosting reviews linked with hosting post or create a hosting review.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -243,11 +240,11 @@ class HostingReviewDetail(APIView):
     """
     Retrieve, update, delete a hosting review.
 
-    * Authenticate with token.
+    * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -284,6 +281,85 @@ class HostingReviewDetail(APIView):
         review = self.get_object(pk=kwargs['review_pk'])
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HostingCategoriesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in CATEGORIES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'categories': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HostingHouseTypesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in HOUSE_TYPES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'house_types': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HostingRoomTypesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in ROOM_TYPES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'room_types': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HostingMealTypesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in MEAL_TYPES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'meal_types': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HostingInternetTypesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in INTERNET_TYPES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'internet_types': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class HostingPhotoTypesView(APIView):
+    def get(self, request, *args, **kwargs):
+        types = []
+        for item in PHOTO_TYPES:
+            types.append({'code': item[0], 'value': item[1]})
+        data = {
+            'photo_types': types,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
 
 # class HostingList(generics.ListCreateAPIView):
 #     """
