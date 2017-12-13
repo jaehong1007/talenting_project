@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError, NotFound
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -303,7 +303,10 @@ class HostingOptionsView(APIView):
                     'msg': '',
                 }
                 return Response(data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                raise NotFound("No match")
+        else:
+            raise NotFound("Please check your parameter variable.")
 
 
 # class HostingList(generics.ListCreateAPIView):
