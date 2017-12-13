@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'event',
     'corsheaders',
     'fcm',
-    'fcm_message',
+    'fcm_message'
 ]
 
 MIDDLEWARE = [
