@@ -21,6 +21,5 @@ class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = (
-            'pk',
-            'event',
-            'image')
+            '__all__'
+        )

@@ -56,7 +56,6 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 class EventPhotoList(generics.ListCreateAPIView):
     queryset = Event.objects.all
-    lookup_url_kwarg = 'event_pk'
     serializer_class = PhotoSerializer
     authentication_classes = (TokenAuthentication,)
 
