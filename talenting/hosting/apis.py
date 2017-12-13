@@ -7,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hosting import options
 from hosting.options import CATEGORIES, HOUSE_TYPES, ROOM_TYPES, MEAL_TYPES, INTERNET_TYPES, PHOTO_TYPES
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
@@ -283,82 +284,26 @@ class HostingReviewDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class HostingCategoriesView(APIView):
+class HostingOptionsView(APIView):
+    """
+    Return hosting options, for example, HOUSE_TYPES and ROOM_TYPES.
+    Take option name from request parameter and get hosting options by using it.
+    """
     def get(self, request, *args, **kwargs):
-        types = []
-        for item in CATEGORIES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'categories': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class HostingHouseTypesView(APIView):
-    def get(self, request, *args, **kwargs):
-        types = []
-        for item in HOUSE_TYPES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'house_types': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class HostingRoomTypesView(APIView):
-    def get(self, request, *args, **kwargs):
-        types = []
-        for item in ROOM_TYPES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'room_types': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class HostingMealTypesView(APIView):
-    def get(self, request, *args, **kwargs):
-        types = []
-        for item in MEAL_TYPES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'meal_types': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class HostingInternetTypesView(APIView):
-    def get(self, request, *args, **kwargs):
-        types = []
-        for item in INTERNET_TYPES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'internet_types': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class HostingPhotoTypesView(APIView):
-    def get(self, request, *args, **kwargs):
-        types = []
-        for item in PHOTO_TYPES:
-            types.append({'code': item[0], 'value': item[1]})
-        data = {
-            'photo_types': types,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        options_name = self.request.query_params.get('options', None)
+        if options_name is not None:
+            option = getattr(options, options_name.upper(), False)
+            types = []
+            if option:
+                for item in option:
+                    types.append({'code': item[0], 'value': item[1]})
+                data = {
+                    options_name: types,
+                    'code': 200,
+                    'msg': '',
+                }
+                return Response(data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 # class HostingList(generics.ListCreateAPIView):
