@@ -54,34 +54,14 @@ class EventParticipateToggle(generics.GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class EventPhotoList(APIView):
-    queryset = Event.objects.all()
-    permission_classes = (IsAuthorOrReadOnly,)
+class EventPhotoList(generics.ListCreateAPIView):
+    queryset = Event.objects.all
+    lookup_url_kwarg = 'event_pk'
+    serializer_class = PhotoSerializer
     authentication_classes = (TokenAuthentication,)
 
-    def get(self, request, *args, **kwargs):
-        event = get_object_or_404(Event, pk=kwargs['event_pk'])
-        photos = event.photo_set.all()
-        serializer = PhotoSerializer(photos, many=True)
-        data = {
-            'event': serializer.data,
-            'code': 200,
-            'msg': '',
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        serializer = PhotoSerializer(data=request.data)
-        event = get_object_or_404(Event, pk=kwargs['event_pk'])
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(place=event)
-            data = {
-                'event': serializer.data,
-                'code': 201,
-                'msg': '',
-            }
-            return Response(data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class EventPhotoDetail(APIView):

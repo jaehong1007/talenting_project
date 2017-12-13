@@ -16,7 +16,7 @@ class EventSerializer(serializers.ModelSerializer):
 
 class PhotoSerializer(serializers.ModelSerializer):
     pk = serializers.ReadOnlyField()
-    event = serializers.PrimaryKeyRelatedField(read_only=True)
+    event = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = Photo
