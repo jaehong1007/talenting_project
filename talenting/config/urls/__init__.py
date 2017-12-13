@@ -7,7 +7,6 @@ from . import apis
 
 urlpatterns = [
     url(r'^', include(views)),
-
     url(r'^', include(apis, namespace='api')),
     url(r'fcm/', include('fcm.urls')),
 ]

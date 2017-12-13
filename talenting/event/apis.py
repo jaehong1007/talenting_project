@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -8,11 +9,14 @@ from utils.permissions import IsAuthorOrReadOnly
 from .utils.pagination import EventPagination
 from member.serializer import UserSerializer
 from .serializer import EventSerializer, PhotoSerializer
+
 from .models import Event, Photo
+from .serializer import EventSerializer
+from .utils.pagination import EventPagination
+from .utils.permissions import IsOwnerOrReadOnly
 
 
 class EventList(generics.ListCreateAPIView):
-
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     pagination_class = EventPagination
@@ -100,3 +104,29 @@ class EventPhotoDetail(APIView):
         photo = self.get_object(pk=kwargs['photo_pk'])
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class WishListEventToggle(generics.GenericAPIView):
+    queryset = Event.objects.all()
+    lookup_url_kwarg = 'event_pk'
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        data = {
+            'user': user.pk,
+            'event': instance.pk,
+        }
+        if not user.wish_event.filter(pk=instance.pk).exists():
+            user.wish_event.add(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_event.remove(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': "Get deleted from the wish list"
+            })
+        return Response(data=data, status=status.HTTP_200_OK)

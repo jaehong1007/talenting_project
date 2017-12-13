@@ -1,37 +1,29 @@
-from rest_framework import serializers, response, status
+from rest_framework import serializers
 
-from .models.hosting import Hosting, Photo, HostingReview
-
-
-# class HostingListSerializer(serializers.ListSerializer):
-#     @property
-#     def data(self):
-#         serialized_data = super(HostingListSerializer, self).data
-#         custom_representation = {
-#             'hosting': serialized_data,
-#             'code': response.status_code,
-#             'msg': '',
-#         }
-#         return custom_representation
+from .models.hosting import Hosting, HostingPhoto, HostingReview
+from .countries import COUNTRIES
 
 
-class PhotoSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+class HostingPhotoSerializer(serializers.ModelSerializer):
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     place = serializers.PrimaryKeyRelatedField(read_only=True)
+    hosting_thumbnail = serializers.ImageField(read_only=True)
 
     class Meta:
-        model = Photo
+        model = HostingPhoto
         fields = (
             'pk',
             'place',
             'hosting_image',
+            'hosting_thumbnail',
             'caption',
             'type',
+            'created_at',
         )
 
 
 class HostingReviewSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     author = serializers.PrimaryKeyRelatedField(read_only=True)
     host = serializers.PrimaryKeyRelatedField(read_only=True)
     place = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -50,8 +42,10 @@ class HostingReviewSerializer(serializers.ModelSerializer):
 
 
 class HostingSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
+    pk = serializers.PrimaryKeyRelatedField(read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    # 세준 임시 추가
+    wish_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Hosting
@@ -61,6 +55,7 @@ class HostingSerializer(serializers.ModelSerializer):
             'category',
             'title',
             'summary',
+            'primary_photo',
             'recommend_counter',
             'house_type',
             'room_type',
@@ -88,8 +83,17 @@ class HostingSerializer(serializers.ModelSerializer):
             'max_lat',
             'min_lon',
             'max_lon',
+            'has_photo',
             'published',
             'created_at',
             'updated_at',
+            # 세준 임시 추가
+            'wish_status',
         )
-        # list_serializer_class = HostingListSerializer
+
+    # 세준 임시 추가
+    def get_wish_status(self, obj, **kwargs):
+        user_pk = self.context.get("user_pk")
+        if obj.wish_hosting.filter(pk=user_pk).exists():
+            return True
+        return False

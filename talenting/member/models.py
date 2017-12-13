@@ -4,6 +4,9 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from imagekit.models import ImageSpecField
+from pilkit.processors import ResizeToFit
+from rest_framework import generics
 from rest_framework.authtoken.models import Token
 
 
@@ -23,6 +26,7 @@ class MyUserManager(BaseUserManager):
         user.first_name = first_name
         user.last_name = last_name
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, password, first_name, last_name):
@@ -31,7 +35,6 @@ class MyUserManager(BaseUserManager):
 
         user.is_active = True
         user.is_admin = True
-
         user.save(using=self._db)
 
         return user
@@ -53,7 +56,10 @@ class User(AbstractBaseUser):
     # TimeStamp
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # 유저의 추가정보
+    # wish list
+    wish_hosting = models.ManyToManyField('hosting.Hosting', related_name= 'wish_hosting')
+    wish_event = models.ManyToManyField('event.Event', related_name='wish_event')
+    wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -107,27 +113,21 @@ class User(AbstractBaseUser):
         '''해당 게스트에게 호스트가 등록한 리뷰의 전체 리스트를 반환'''
         return self.user_review_about_guest.filter(guest=self)
 
-        # def get_user_average_rating(self):
-        #     '''유저 레이팅의 평균을 소수점으로 반환'''
-        #     user_reviews = self.user_review_about_guest.filter(guest=self)
-        #     if user_reviews:
-        #         user_ratings = [review.rating for review in user_reviews]
-        #         return float("{0:.1f}".format(sum(user_ratings) / len(user_reviews)))
-        #     return float(0)
-        #
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=6, blank=True)
     self_intro = models.TextField(blank=True)
-    talent_category = models.CharField(max_length=20, blank=True)
+    talent_category = ArrayField(models.CharField(max_length=20, blank=True), null=True)
     talent_intro = models.TextField(blank=True)
     country = models.CharField(max_length=20, blank=True)
     city = models.CharField(max_length=20, blank=True)
     occupation = models.CharField(max_length=20, blank=True)
     available_languages = ArrayField(models.CharField(max_length=30, blank=True), null=True)
+
+    def __str__(self):
+        return f'profile: {self.user.get_full_name()}'
 
     @property
     def age(self):
@@ -147,6 +147,10 @@ class Profile(models.Model):
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='profile', null=False)
+    profile_thumbnail = ImageSpecField(source='image',
+                                       processors=[ResizeToFit(767)],
+                                       format='JPEG',
+                                       options={'quality': 85})
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -156,8 +160,21 @@ class GuestReview(models.Model):
     guest = models.ForeignKey(User, related_name='user_review_about_guest', on_delete=models.CASCADE)
     review = models.TextField()
     recommend = models.BooleanField(default=True)
-    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
+
+
+class MyTrip(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    destination = models.CharField(max_length=100)
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    number_travelers = models.IntegerField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.first_name

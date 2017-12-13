@@ -1,8 +1,8 @@
 from imagekit import ImageSpec
-from pilkit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 
 
 class Thumbnailer(ImageSpec):
-    processors = [ResizeToFill(100, 50)]
+    processors = [ResizeToFit(767)]
     format = 'JPEG'
     options = {'quality': 85}

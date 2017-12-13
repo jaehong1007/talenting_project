@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from .models import Profile, ProfileImage
+from event.models import Event
+from hosting.models.hosting import Hosting
+from .models import Profile, ProfileImage, GuestReview, MyTrip
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -28,11 +31,23 @@ class SignUpSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return self.Meta.model.objects.create_user(
             email=validated_data['email'],
-
             password=validated_data['password2'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
         )
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password1 = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password1'] != data['new_password2']:
+            raise serializers.ValidationError('password should match')
+        if data['old_password'] == data['new_password1']:
+            raise serializers.ValidationError('Old password and new password should be different')
+        return data
 
 
 class LogInSerializer(serializers.ModelSerializer):
@@ -42,13 +57,21 @@ class LogInSerializer(serializers.ModelSerializer):
         model = User
         fields = ('pk', 'email', 'password')
 
-
 class ProfileManageSerializer(serializers.ModelSerializer):
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
+        fields = ('first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
                   'talent_intro', 'country', 'city', 'occupation', 'available_languages', 'age')
-        read_only_fields = ('user', 'age',)
+        read_only_fields = ('age',)
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
@@ -60,14 +83,54 @@ class ProfileImageSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     images = ProfileImageSerializer(many=True)
     age = serializers.SerializerMethodField('_calculate_age')
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ('pk', 'first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
+                  'talent_intro', 'country', 'city', 'occupation',
+                  'available_languages', 'images', 'age')
 
     def _calculate_age(self, obj):
         if obj.birth:
             return obj.calculate_age()
         return None
 
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
+
+
+class GuestReviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Profile
-        fields = ('user', 'birth', 'gender', 'self_intro', 'talent_category',
-                  'talent_intro', 'country', 'city', 'occupation',
-                  'available_languages', 'images', 'age')
+        model = GuestReview
+        fields = ('host', 'guest', 'review', 'recommend', 'created_at')
+        read_only_fields = ('host', 'guest', 'created_at')
+
+
+class WishHostingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hosting
+        fields = ('pk', 'owner', 'title', 'primary_photo')
+
+
+class WishEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ('pk', 'author', 'title', 'primary_photo')
+
+
+class MyEventSerializer(WishEventSerializer):
+    pass
+
+
+class MyTripSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = MyTrip
+        fields = ('pk', 'user', 'destination', 'arrival_date', 'departure_date',
+                  'number_travelers', 'description')
