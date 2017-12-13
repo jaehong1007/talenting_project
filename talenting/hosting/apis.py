@@ -290,7 +290,7 @@ class HostingOptionsView(APIView):
     Take option name from request parameter and get hosting options by using it.
     """
     def get(self, request, *args, **kwargs):
-        options_name = self.request.query_params.get('options', None)
+        options_name = self.request.query_params.get('param', None)
         if options_name is not None:
             option = getattr(options, options_name.upper(), False)
             types = []
