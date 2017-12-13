@@ -330,7 +330,7 @@ class WishListProfileToggle(generics.GenericAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+class MyTripRetrieveUpdateDeleteView(MyRetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -349,7 +349,7 @@ class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class MyTripListCreateView(generics.ListCreateAPIView):
+class MyTripListCreateView(MyListCreateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
