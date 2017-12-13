@@ -63,7 +63,6 @@ INSTALLED_APPS = [
     'member',
     'hosting',
     'event',
-    'wishlist',
     'corsheaders',
 ]
 

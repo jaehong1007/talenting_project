@@ -41,7 +41,7 @@ class HostingList(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = HostingSerializer(queryset, many=True)
+        serializer = HostingSerializer(queryset, many=True, context={'user_pk': request.user.pk})
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
@@ -82,8 +82,8 @@ class HostingDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
-        #세준 임시 추가
-        serializer = HostingSerializer(hosting, context={'user_pk':request.user.pk})
+        # 세준 임시 추가
+        serializer = HostingSerializer(hosting, context={'user_pk': request.user.pk})
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
@@ -285,6 +285,7 @@ class HostingReviewDetail(APIView):
         review = self.get_object(pk=kwargs['review_pk'])
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # class HostingList(generics.ListCreateAPIView):
 #     """

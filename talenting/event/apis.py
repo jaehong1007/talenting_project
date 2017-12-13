@@ -16,6 +16,14 @@ class EventList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self,
+            'user_pk': self.request.user.pk
+        }
+
 
 class EventDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
@@ -24,6 +32,14 @@ class EventDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (
         IsOwnerOrReadOnly,
     )
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self,
+            'user_pk': self.request.user.pk
+        }
 
 
 class EventParticipateToggle(generics.GenericAPIView):
@@ -49,7 +65,6 @@ class EventParticipateToggle(generics.GenericAPIView):
 
 class EventPhoto(generics.ListCreateAPIView):
     queryset = Photo.objects.all()
-
 
 
 class WishListEventToggle(generics.GenericAPIView):
