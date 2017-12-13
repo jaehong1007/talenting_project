@@ -63,9 +63,9 @@ INSTALLED_APPS = [
     'member',
     'hosting',
     'event',
-    'wishlist',
     'corsheaders',
     'fcm',
+    'fcm_message'
 ]
 
 MIDDLEWARE = [
