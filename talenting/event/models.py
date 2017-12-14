@@ -30,18 +30,27 @@ class Event(models.Model):
         format='JPEG',
         options={'quality': 60}
         )
+
+    # Date
     opening_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
     event_date = models.DateTimeField()
-    maximum_participant = models.IntegerField(blank=True, null=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
+
+    # Participants
     participants = models.ManyToManyField(
         'member.User',
         related_name='participants',
         blank=True,
         verbose_name='참여한 유저 목록'
     )
+    maximum_participant = models.IntegerField(blank=True, null=True, default=0)
+    participants_count = models.IntegerField(default=0, editable=False, blank=True)
+
+    # Geo Location
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     objects = EventManager()
 
@@ -51,13 +60,16 @@ class Event(models.Model):
     def __str__(self):
         return f'{self.title}'
 
-    def get_participant_counter(self):
-        participants = self.participants.all()
-        count = 0
-        for user in participants:
-            if user.participants:
-                count += 1
-        self.particiapnts_counter = count
+    def get_photos(self):
+        photos = self.photo_set.all()
+        return photos
+
+    def participants_counter(self):
+        participants = self.participants
+        self.participants_count = participants
+
+    def save(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
 
 
 class EventComment(models.Model):
@@ -76,6 +88,10 @@ class EventComment(models.Model):
 
 
 class Photo(models.Model):
-    event = models.ForeignKey(Event, related_name='event_photo')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        super(Photo, self).save(*args, **kwargs)
+

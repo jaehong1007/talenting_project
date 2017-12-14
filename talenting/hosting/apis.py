@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+
 from django.db.models import Q
 from rest_framework import status, generics, permissions, models
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
@@ -153,6 +154,7 @@ class PhotoList(APIView):
 class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
+
 
     * Authenticate with token.
     * Allow owner to perform any method.
