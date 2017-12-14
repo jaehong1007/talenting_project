@@ -2,14 +2,13 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
-from rest_framework.exceptions import APIException, ValidationError, NotFound, PermissionDenied
+from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hosting import options
-from hosting.options import CATEGORIES, HOUSE_TYPES, ROOM_TYPES, MEAL_TYPES, INTERNET_TYPES, PHOTO_TYPES
-from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
+from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly, IsAuthorOrReadOnly
 
 from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, HostingRequestSerializer
 from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
@@ -345,6 +344,39 @@ class HostingRequestList(APIView):
                 return Response(data, status=status.HTTP_201_CREATED)
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
         raise PermissionDenied("You've already sent request to stay to this host")
+
+
+class HostingRequestDetail(APIView):
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get_object(self, pk):
+        obj = get_object_or_404(HostingRequest, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        hosting_request = self.get_object(pk=kwargs['request_pk'])
+        hosting_request.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HostingRequestAccept(APIView):
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    permission_classes = (IsPlaceOwnerOrReadOnly,)
+
+    def put(self, request, *args, **kwargs):
+        hosting_request = get_object_or_404(HostingRequest, pk=kwargs['request_pk'])
+        self.check_object_permissions(self.request, hosting_request)
+        hosting_request.accepted = True
+        hosting_request.save(update_fields=['accepted'])
+        serializer = HostingRequestSerializer(hosting_request)
+        data = {
+            'hosting_request': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
 
 # class HostingList(generics.ListCreateAPIView):

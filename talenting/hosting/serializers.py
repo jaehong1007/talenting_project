@@ -99,5 +99,6 @@ class HostingRequestSerializer(serializers.ModelSerializer):
             'departure_date',
             'number_travelers',
             'description',
+            'accepted',
             'created_at',
         )

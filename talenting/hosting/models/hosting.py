@@ -156,6 +156,7 @@ class HostingRequest(models.Model):
     departure_date = models.DateField()
     number_travelers = models.IntegerField()
     description = models.TextField()
+    accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
