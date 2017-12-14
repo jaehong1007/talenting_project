@@ -13,6 +13,6 @@ def custom_exception_handler(exc, context):
             error = error_message
         response.data = {
             'code': status_code,
-            'msg': error
+            'msg': error + '   request= ' + str(context['request'].data)
         }
     return response

@@ -166,6 +166,7 @@ class PasswordReset(generics.UpdateAPIView):
             }
             return Response(data=data, status=status.HTTP_200_OK)
 
+
 class SignOut(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -185,7 +186,7 @@ class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = ProfileSerializer(instance)
+        serializer = ProfileSerializer(instance, context={'user_pk': self.request.user.pk})
         data = {
             self.model_name(): serializer.data,
             'code': status.HTTP_200_OK,
@@ -304,6 +305,7 @@ class ProfileWishListDelete(APIView):
         selected_profile = get_object_or_404(Profile, pk=kwargs['profile_pk'])
         user.wish_profile.remove(selected_profile)
         return Response(status=status.HTTP_200_OK)
+
 
 class WishListProfileToggle(generics.GenericAPIView):
     queryset = Profile.objects.all()

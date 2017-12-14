@@ -75,9 +75,10 @@ class ProfileManageSerializer(serializers.ModelSerializer):
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
+    profile_thumbnail = serializers.ImageField(read_only=True)
     class Meta:
         model = ProfileImage
-        fields = ('pk', 'image', 'created_at')
+        fields = ('pk', 'image', 'profile_thumbnail', 'created_at')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -85,12 +86,14 @@ class ProfileSerializer(serializers.ModelSerializer):
     age = serializers.SerializerMethodField('_calculate_age')
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
+    wish_status = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Profile
         fields = ('pk', 'first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
                   'talent_intro', 'country', 'city', 'occupation',
-                  'available_languages', 'images', 'age')
+                  'available_languages', 'images', 'age', 'wish_status')
 
     def _calculate_age(self, obj):
         if obj.birth:
@@ -102,6 +105,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_last_name(self, obj):
         return obj.user.last_name
+
+    def get_wish_status(self, obj, **kwargs):
+        user_pk = self.context.get("user_pk")
+        if obj.wish_profile.filter(pk=user_pk).exists():
+            return True
+        return False
 
 
 class GuestReviewSerializer(serializers.ModelSerializer):

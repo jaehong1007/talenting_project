@@ -146,7 +146,7 @@ class Profile(models.Model):
 
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile', null=False)
+    image = models.ImageField(upload_to='profile', null=False, max_length=255)
     profile_thumbnail = ImageSpecField(source='image',
                                        processors=[ResizeToFit(767)],
                                        format='JPEG',
