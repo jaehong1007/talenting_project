@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
-from rest_framework.exceptions import APIException, ValidationError, NotFound
+from rest_framework.exceptions import APIException, ValidationError, NotFound, PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +12,7 @@ from hosting.options import CATEGORIES, HOUSE_TYPES, ROOM_TYPES, MEAL_TYPES, INT
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
 from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
-from .models.hosting import Hosting, HostingPhoto, HostingReview
+from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingBooking
 
 User = get_user_model()
 
@@ -220,21 +220,23 @@ class HostingReviewList(APIView):
     def post(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         host = get_object_or_404(User, pk=hosting.owner_id)
-        serializer = HostingReviewSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(
-                author=request.user,
-                host=host,
-                place=hosting,
-            )
-            # This is hard coding for API structure for Android.
-            data = {
-                'hosting_review': serializer.data,
-                'code': 200,
-                'msg': '',
-            }
-            return Response(data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        if HostingBooking.objects.filter(user=request.user, place=hosting).exists():
+            serializer = HostingReviewSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(
+                    author=request.user,
+                    host=host,
+                    place=hosting,
+                )
+                # This is hard coding for API structure for Android.
+                data = {
+                    'hosting_review': serializer.data,
+                    'code': 200,
+                    'msg': '',
+                }
+                return Response(data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        raise PermissionDenied('Sorry, you are not allowed to write a review on this place')
 
 
 class HostingReviewDetail(APIView):
@@ -266,22 +268,26 @@ class HostingReviewDetail(APIView):
 
     def put(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
-        serializer = HostingReviewSerializer(review, data=request.data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            # This is hard coding for API structure for Android.
-            data = {
-                'hosting_review': serializer.data,
-                'code': 200,
-                'msg': '',
-            }
-            return Response(data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        if review.is_editable:
+            serializer = HostingReviewSerializer(review, data=request.data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                # This is hard coding for API structure for Android.
+                data = {
+                    'hosting_review': serializer.data,
+                    'code': 200,
+                    'msg': '',
+                }
+                return Response(data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        raise PermissionDenied('Sorry, your review update period is over')
 
     def delete(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
-        review.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if review.is_editable:
+            review.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        raise PermissionDenied('Sorry, your review update period is over')
 
 
 class HostingOptionsView(APIView):
@@ -289,6 +295,7 @@ class HostingOptionsView(APIView):
     Return hosting options, for example, HOUSE_TYPES and ROOM_TYPES.
     Take option name from request parameter and get hosting options by using it.
     """
+
     def get(self, request, *args, **kwargs):
         options_name = self.request.query_params.get('param', None)
         if options_name is not None:

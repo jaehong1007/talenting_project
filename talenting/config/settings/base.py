@@ -147,3 +147,6 @@ USE_TZ = True
 
 # jet 설정
 JET_SIDE_MENU_COMPACT = True
+
+# Review setting
+REVIEW_UPDATE_PERIOD = 86400  # second

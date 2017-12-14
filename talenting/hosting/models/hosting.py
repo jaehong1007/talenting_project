@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -5,6 +7,7 @@ from django.db import models
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
+from config import settings
 from ..options import *
 
 User = get_user_model()
@@ -137,5 +140,17 @@ class HostingReview(models.Model):
     def __str__(self):
         return f'Author: {self.author.first_name}'
 
+    def is_editable(self):
+        period_end = self.created_at + timezone.timedelta(
+            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))
+        if timezone.now() > period_end:
+            return False
+        return True
+
     class Meta:
         ordering = ['-created_at']
+
+
+class HostingBooking(models.Model):
+    user = models.ManyToManyField(User)
+    place = models.ManyToManyField(Hosting)
