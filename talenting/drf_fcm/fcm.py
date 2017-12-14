@@ -3,6 +3,8 @@ import json
 import requests
 from django.core.exceptions import ImproperlyConfigured
 
+from .settings import API_KEY, MAX_RECIPIENTS, API_URL
+
 
 class FCMMessage(object):
     def __init__(self):

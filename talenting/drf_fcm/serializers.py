@@ -1,6 +1,7 @@
-
 from rest_framework import serializers
 from django.utils.translation import ugettext_lazy as _
+
+from .settings import get_device_model
 
 Device = get_device_model()
 
@@ -22,7 +23,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ('id','name', 'device_id', 'reg_id', 'is_active', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'device_id', 'reg_id', 'is_active', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_at', 'updated_at')
 
 

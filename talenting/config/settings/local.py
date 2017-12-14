@@ -1,3 +1,4 @@
+
 from .base import *
 
 ALLOWED_HOSTS = [
@@ -8,3 +9,4 @@ ALLOWED_HOSTS = [
 ]
 
 DATABASES = config_secret_local['django']['databases']
+

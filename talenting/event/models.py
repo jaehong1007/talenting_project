@@ -30,6 +30,7 @@ class Event(models.Model):
         format='JPEG',
         options={'quality': 60}
         )
+    additional_photo = models.ImageField(upload_to='event', blank=True)
 
     # Date
     opening_date = models.DateTimeField(auto_now_add=True)
@@ -88,7 +89,7 @@ class EventComment(models.Model):
 
 
 class Photo(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    events = models.ForeignKey(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
 

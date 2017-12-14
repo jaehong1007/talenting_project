@@ -64,9 +64,12 @@ INSTALLED_APPS = [
     'hosting',
     'event',
     'corsheaders',
-    'fcm',
-    'fcm_message'
+    'drf_fcm',
+
 ]
+DRF_FCM = {
+    'API_KEY': "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4"
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -117,7 +120,6 @@ TEMPLATES = [
     },
 ]
 
-FCM_APIKEY = "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4"
 
 WSGI_APPLICATION = 'config.wsgi.application'
 

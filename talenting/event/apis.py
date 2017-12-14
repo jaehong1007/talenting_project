@@ -5,10 +5,10 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.permissions import IsAuthorOrReadOnly
+from utils.permissions import IsAuthorOrReadOnly, IsEventOwnerOrReadOnly
 from .utils.pagination import EventPagination
 from member.serializer import UserSerializer
-from .serializer import EventSerializer, PhotoSerializer
+from .serializer import EventSerializer, PhotoSerializer, EventParticipateSerializer
 
 from .models import Event, Photo
 from .serializer import EventSerializer
@@ -52,7 +52,7 @@ class EventParticipateToggle(generics.GenericAPIView):
             participate_status = True
         data = {
             'participant': UserSerializer(user).data,
-            'event': EventSerializer(instance).data,
+            'event': EventParticipateSerializer(instance).data,
             'result': participate_status,
         }
         return Response(data, status=status.HTTP_200_OK)
@@ -61,6 +61,7 @@ class EventParticipateToggle(generics.GenericAPIView):
 class EventPhotoList(generics.ListCreateAPIView):
     queryset = Event.objects.all
     serializer_class = PhotoSerializer
+    permission_classes = (IsAuthorOrReadOnly,)
     authentication_classes = (TokenAuthentication,)
 
     def perform_create(self, serializer):
@@ -68,7 +69,6 @@ class EventPhotoList(generics.ListCreateAPIView):
 
 
 class EventPhotoDetail(APIView):
-    queryset = Event.objects.all()
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
