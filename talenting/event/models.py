@@ -23,7 +23,7 @@ class Event(models.Model):
     state = models.CharField(_('State/Region'), max_length=40, null=True, blank=True)
     city = models.CharField(_('City'), max_length=40)
     price = models.DecimalField(_('Price per person'), decimal_places=2, max_digits=6, blank=True, null=True)
-    primary_photo = models.ImageField(upload_to='event')
+    primary_photo = models.ImageField(upload_to='event', max_length=255)
     primary_photo_thumbnail = ImageSpecField(
         source='primary_photo',
         processors=[ResizeToFill(100, 50)],

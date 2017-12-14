@@ -75,9 +75,10 @@ class ProfileManageSerializer(serializers.ModelSerializer):
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
+    profile_thumbnail = serializers.ImageField(read_only=True)
     class Meta:
         model = ProfileImage
-        fields = ('pk', 'image', 'created_at')
+        fields = ('pk', 'image', 'profile_thumbnail', 'created_at')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
