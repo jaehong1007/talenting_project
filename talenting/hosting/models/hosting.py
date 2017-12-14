@@ -56,10 +56,8 @@ class Hosting(models.Model):
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
-    min_lat = models.FloatField(default=0.0)
-    max_lat = models.FloatField(default=0.0)
-    min_lon = models.FloatField(default=0.0)
-    max_lon = models.FloatField(default=0.0)
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     # Timestamp/Status
     has_photo = models.BooleanField(default=False)
@@ -151,6 +149,15 @@ class HostingReview(models.Model):
         ordering = ['-created_at']
 
 
-class HostingBooking(models.Model):
-    user = models.ManyToManyField(User)
-    place = models.ManyToManyField(Hosting)
+class HostingRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    number_travelers = models.IntegerField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Request: {self.place}'
+

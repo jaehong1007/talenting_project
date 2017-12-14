@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models.hosting import Hosting, HostingPhoto, HostingReview
+from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
 
 
 class HostingPhotoSerializer(serializers.ModelSerializer):
@@ -76,12 +76,28 @@ class HostingSerializer(serializers.ModelSerializer):
             'street',
             'address',
             'postcode',
-            'min_lat',
-            'max_lat',
-            'min_lon',
-            'max_lon',
+            'lat',
+            'lon',
             'has_photo',
             'published',
             'created_at',
             'updated_at',
+        )
+
+
+class HostingRequestSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = HostingRequest
+        fields = (
+            'pk',
+            'user',
+            'place',
+            'arrival_date',
+            'departure_date',
+            'number_travelers',
+            'description',
+            'created_at',
         )

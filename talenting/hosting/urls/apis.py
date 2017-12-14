@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from ..apis import HostingList, HostingDetail, PhotoList, PhotoDetail, HostingReviewList, HostingReviewDetail, \
-    WishListAddHosting, HostingOptionsView
+    WishListAddHosting, HostingOptionsView, HostingRequestList
 
 urlpatterns = [
     url(r'^$', HostingList.as_view(), name='hosting-list'),
@@ -11,5 +11,6 @@ urlpatterns = [
     url(r'^(?P<hosting_pk>\d+)/review/$', HostingReviewList.as_view(), name='review-list'),
     url(r'^(?P<hosting_pk>\d+)/review/(?P<review_pk>\d+)/$', HostingReviewDetail.as_view(), name='review-detail'),
     url(r'^(?P<hosting_pk>\d+)/wish-list-add/$', WishListAddHosting.as_view(), name='wish-list-add'),
+    url(r'^(?P<hosting_pk>\d+)/request/$', HostingRequestList.as_view(), name='request'),
     url(r'^options/$', HostingOptionsView.as_view(), name='hosting-options'),
 ]

@@ -11,8 +11,8 @@ from hosting import options
 from hosting.options import CATEGORIES, HOUSE_TYPES, ROOM_TYPES, MEAL_TYPES, INTERNET_TYPES, PHOTO_TYPES
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly
 
-from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer
-from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingBooking
+from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, HostingRequestSerializer
+from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
 
 User = get_user_model()
 
@@ -220,7 +220,7 @@ class HostingReviewList(APIView):
     def post(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         host = get_object_or_404(User, pk=hosting.owner_id)
-        if HostingBooking.objects.filter(user=request.user, place=hosting).exists():
+        if HostingRequest.objects.filter(user=request.user, place=hosting).exists():
             serializer = HostingReviewSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save(
@@ -314,6 +314,37 @@ class HostingOptionsView(APIView):
                 raise NotFound("No match")
         else:
             raise NotFound("Please check your parameter variable.")
+
+
+class HostingRequestList(APIView):
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
+
+    def get(self, request, *args, **kwargs):
+        hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
+        hosting_request = get_object_or_404(HostingRequest, user=request.user, place=hosting)
+        serializer = HostingRequestSerializer(hosting_request)
+        # This is hard coding for API structure for Android.
+        data = {
+            'hosting_request': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
+        if not HostingRequest.objects.filter(user=request.user, place=hosting).exists():
+            serializer = HostingRequestSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(user=request.user, place=hosting)
+                data = {
+                    'hosting_request': serializer.data,
+                    'code': 201,
+                    'msg': '',
+                }
+                return Response(data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        raise PermissionDenied("You've already sent request to stay to this host")
 
 
 # class HostingList(generics.ListCreateAPIView):
