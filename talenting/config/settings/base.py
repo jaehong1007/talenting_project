@@ -46,8 +46,6 @@ ALLOWED_HOSTS = [
 
 # Application definition
 INSTALLED_APPS = [
-    'jet.dashboard',
-    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,10 +57,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
+    'imagekit',
+    'fcm_django',
 
     'member',
     'hosting',
     'event',
+    'message',
     'corsheaders',
 ]
 
@@ -94,6 +95,18 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'utils.exception.handler.custom_exception_handler',
 }
 
+# FCM_DJANGO
+FCM_DJANGO_SETTINGS = {
+    "FCM_SERVER_KEY": "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4",
+    # true if you want to have only one active device per registered user at a time
+    # default: False
+    "ONE_DEVICE_PER_USER": False,
+    # devices to which notifications cannot be sent,
+    # are deleted upon receiving error response from FCM
+    # default: False
+    "DELETE_INACTIVE_DEVICES": False,
+}
+
 # Template
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
@@ -109,7 +122,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
             ],
         },
     },
@@ -146,7 +158,7 @@ EMAIL_PORT = 587
 
 # Internationalization
 LANGUAGE_CODE = 'ko-kr'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True

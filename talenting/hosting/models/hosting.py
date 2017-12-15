@@ -53,10 +53,8 @@ class Hosting(models.Model):
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
-    min_lat = models.FloatField(default=0.0)
-    max_lat = models.FloatField(default=0.0)
-    min_lon = models.FloatField(default=0.0)
-    max_lon = models.FloatField(default=0.0)
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     # Timestamp/Status
     has_photo = models.BooleanField(default=False)
