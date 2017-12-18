@@ -3,6 +3,8 @@ from datetime import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
@@ -14,11 +16,30 @@ User = get_user_model()
 
 
 class HostingManager(models.Model):
+    """
+    Override get_queryset to filter hosting object without owner.
+    """
+
     def get_queryset(self):
         return super().get_queryset().exclude(owner=None)
 
 
 class Hosting(models.Model):
+    """
+    Representation.
+        A user can only one hosting object.
+        primary_photo take hosting_thumbnail from HostingPhoto model, it would use for representing hosting list.
+
+    House.
+        To input multiple language from user, ArrayField in Postgres is applied.
+
+    Address.
+        address field would take a whole address of a user from Google map API.
+
+    Geolocation.
+        Value of latitude and longitude is utilized to show hostings around a user.
+    """
+
     # Representation
     owner = models.OneToOneField(User, on_delete=models.CASCADE)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
@@ -65,34 +86,34 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_photos(self):
+        return self.hostingphoto_set.all()  # return HostingPhoto queryset
+
+    def get_hosting_reviews(self):
+        return self.hostingreview_set.all()  # return HostingReview queryset
+
     def get_primary_photo(self):
         """
-        primary_photo is used for representing list.
-        The method is called when HostingPhoto object is created.
+        Take queryset from HostingPhoto,
+        and assign the first hosting_thumbnail in the queryset to primary_photo.
         """
-        photos = self.hostingphoto_set.all()
+        photos = self.get_photos()
         if photos:
             self.primary_photo = photos[0].hosting_thumbnail
             self.has_photo = True
             self.save()
 
-    def get_photos(self):
-        photos = self.hostingphoto_set.all()
-        return photos
-
-    def get_hosting_reviews(self):
-        return self.hostingreview_set.all()
-
-    def get_recommend_counter(self):
-        reviews = self.hostingreview_set.all()
+    @receiver([post_delete, post_save], sender='hosting.HostingReview')
+    def get_recommend_counter(sender, instance, **kwargs):
+        reviews = instance.place.get_hosting_reviews()
         count = 0
         for rev in reviews:
             if rev.recommend:
                 count += 1
-        self.recommend_counter = count
+        instance.place.recommend_counter = count
+        instance.place.save()
 
     def save(self, *args, **kwargs):
-        self.get_recommend_counter()
         super(Hosting, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -161,4 +182,3 @@ class HostingRequest(models.Model):
 
     def __str__(self):
         return f'Request: {self.place}'
-

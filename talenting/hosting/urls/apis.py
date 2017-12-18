@@ -1,7 +1,9 @@
 from django.conf.urls import url
 
 from ..apis import HostingList, HostingDetail, PhotoList, PhotoDetail, HostingReviewList, HostingReviewDetail, \
-    WishListHostingToggle, HostingRequestDetail, HostingRequestList, HostingRequestAccept, HostingOptionsView
+    HostingOptionsView, HostingRequestList, HostingRequestDetail, HostingRequestAccept, \
+    WishListHostingToggle
+
 
 urlpatterns = [
     url(r'^$', HostingList.as_view(), name='hosting-list'),

@@ -152,7 +152,6 @@ class PhotoDetail(APIView):
     """
     Retrieve, update and delete a photo.
 
-
     * Authenticate with token or username/password.
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
@@ -253,7 +252,7 @@ class HostingReviewDetail(APIView):
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
-        obj = get_object_or_404(HostingReview, pk=pk)
+        obj = get_object_or_404(HostingReview, pk='')
         self.check_object_permissions(self.request, obj)
         return obj
 
@@ -445,4 +444,3 @@ class WishListHostingToggle(generics.GenericAPIView):
                 'msg': "Get deleted from the wish list"
             })
         return Response(data=data, status=status.HTTP_200_OK)
-
