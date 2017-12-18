@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+
 from django.db.models import Q
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication
@@ -38,7 +39,7 @@ class HostingList(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = HostingSerializer(queryset, many=True)
+        serializer = HostingSerializer(queryset, many=True, context={'user_pk': request.user.pk})
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
@@ -79,7 +80,8 @@ class HostingDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
-        serializer = HostingSerializer(hosting)
+        # 세준 임시 추가
+        serializer = HostingSerializer(hosting, context={'user_pk': request.user.pk})
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
@@ -418,21 +420,27 @@ class HostingRequestAccept(APIView):
 #     serializer_class = PhotoSerializer
 #     permission_classes = (IsPhotoOwnerOrReadOnly,)
 
-class WishListAddHosting(generics.GenericAPIView):
+class WishListHostingToggle(generics.GenericAPIView):
     queryset = Hosting.objects.all()
     lookup_url_kwarg = 'hosting_pk'
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.wish_hosting.filter(pk=instance.pk).exists():
-            user.wish_hosting.add(instance)
-        else:
-            raise APIException('This hosting is already in my wish list items')
         data = {
             'user': user.pk,
             'hosting': instance.pk,
-            'code': status.HTTP_201_CREATED,
-            'msg': ''
         }
-        return Response(data=data, status=status.HTTP_201_CREATED)
+        if not user.wish_hosting.filter(pk=instance.pk).exists():
+            user.wish_hosting.add(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_hosting.remove(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': "Get deleted from the wish list"
+            })
+        return Response(data=data, status=status.HTTP_200_OK)

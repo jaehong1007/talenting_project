@@ -4,6 +4,9 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from imagekit.models import ImageSpecField
+from pilkit.processors import ResizeToFit
+from rest_framework import generics
 from rest_framework.authtoken.models import Token
 
 
@@ -54,9 +57,9 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # wish list
-    wish_hosting = models.ManyToManyField('hosting.Hosting')
-    wish_event = models.ManyToManyField('event.Event')
-    wish_user = models.ManyToManyField('self', symmetrical=False)
+    wish_hosting = models.ManyToManyField('hosting.Hosting', related_name= 'wish_hosting')
+    wish_event = models.ManyToManyField('event.Event', related_name='wish_event')
+    wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -123,6 +126,9 @@ class Profile(models.Model):
     occupation = models.CharField(max_length=20, blank=True)
     available_languages = ArrayField(models.CharField(max_length=30, blank=True), null=True)
 
+    def __str__(self):
+        return f'profile: {self.user.get_full_name()}'
+
     @property
     def age(self):
         if self.birth:
@@ -140,7 +146,11 @@ class Profile(models.Model):
 
 class ProfileImage(models.Model):
     profile = models.ForeignKey('Profile', related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile', null=False)
+    image = models.ImageField(upload_to='profile', null=False, max_length=255)
+    profile_thumbnail = ImageSpecField(source='image',
+                                       processors=[ResizeToFit(767)],
+                                       format='JPEG',
+                                       options={'quality': 85})
     created_at = models.DateTimeField(auto_now_add=True)
 
 

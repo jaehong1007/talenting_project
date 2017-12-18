@@ -9,15 +9,6 @@ AWS_STORAGE_BUCKET_NAME = config_secret_dev['aws']['s3_bucket_name']
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_REGION_NAME = 'ap-northeast-2'
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '.elasticbeanstalk.com',
-    'api.yabi.kr',
-    'front.localhost',
-
-]
-
 # AWS Storage
 STATICFILES_LOCATION = 'static'
 MEDIAFILES_LOCATION = 'media'
