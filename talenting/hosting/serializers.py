@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from .models.hosting import Hosting, HostingPhoto, HostingReview
-from .countries import COUNTRIES
+from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
 
 
 class HostingPhotoSerializer(serializers.ModelSerializer):
@@ -39,6 +38,10 @@ class HostingReviewSerializer(serializers.ModelSerializer):
             'recommend',
             'created_at',
         )
+
+    def create(self, validated_data):
+        obj = HostingReview.objects.create(**validated_data)
+        return obj
 
 
 class HostingSerializer(serializers.ModelSerializer):
@@ -78,10 +81,8 @@ class HostingSerializer(serializers.ModelSerializer):
             'street',
             'address',
             'postcode',
-            'min_lat',
-            'max_lat',
-            'min_lon',
-            'max_lon',
+            'lat',
+            'lon',
             'has_photo',
             'published',
             'created_at',
@@ -89,8 +90,27 @@ class HostingSerializer(serializers.ModelSerializer):
             'wish_status',
         )
 
-    def get_wish_status(self, obj, **kwargs):
-        user_pk = self.context.get("user_pk")
-        if obj.wish_hosting.filter(pk=user_pk).exists():
-            return True
-        return False
+        def get_wish_status(self, obj, **kwargs):
+            user_pk = self.context.get("user_pk")
+            if obj.wish_hosting.filter(pk=user_pk).exists():
+                return True
+            return False
+
+
+class HostingRequestSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    place = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = HostingRequest
+        fields = (
+            'pk',
+            'user',
+            'place',
+            'arrival_date',
+            'departure_date',
+            'number_travelers',
+            'description',
+            'accepted',
+            'created_at',
+        )
