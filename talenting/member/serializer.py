@@ -57,6 +57,7 @@ class LogInSerializer(serializers.ModelSerializer):
         model = User
         fields = ('pk', 'email', 'password')
 
+
 class ProfileManageSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()

@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -5,6 +7,7 @@ from django.db import models
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
+from config import settings
 from ..options import *
 
 User = get_user_model()
@@ -53,10 +56,8 @@ class Hosting(models.Model):
     postcode = models.CharField(max_length=10, blank=True)
 
     # Geolocation
-    min_lat = models.FloatField(default=0.0)
-    max_lat = models.FloatField(default=0.0)
-    min_lon = models.FloatField(default=0.0)
-    max_lon = models.FloatField(default=0.0)
+    lat = models.FloatField(default=0.0)
+    lon = models.FloatField(default=0.0)
 
     # Timestamp/Status
     has_photo = models.BooleanField(default=False)
@@ -137,5 +138,27 @@ class HostingReview(models.Model):
     def __str__(self):
         return f'Author: {self.author.first_name}'
 
+    def is_editable(self):
+        period_end = self.created_at + timezone.timedelta(
+            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))
+        if timezone.now() > period_end:
+            return False
+        return True
+
     class Meta:
         ordering = ['-created_at']
+
+
+class HostingRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    number_travelers = models.IntegerField()
+    description = models.TextField()
+    accepted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Request: {self.place}'
+

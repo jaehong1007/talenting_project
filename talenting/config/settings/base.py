@@ -18,18 +18,18 @@ CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
 CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
+
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
-config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
+
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
-# Static Path
+# Static Paths
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR
 ]
-STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -41,7 +41,6 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     'localhost',
     '127.0.0.1',
-    '.yabi.kr',
 ]
 
 # Application definition
@@ -59,17 +58,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
-
     'member',
     'hosting',
     'event',
     'corsheaders',
-    'drf_fcm',
-
 ]
-DRF_FCM = {
-    'API_KEY': "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4"
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -81,23 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = (
-    'localhost:3001',
-    'front.localhost:8013',
-    '.elasticbeanstalk.com',
-    'talenting-env.ap-northeast-2.elasticbeanstalk.com',
-)
-
 ROOT_URLCONF = 'config.urls'
-
-# DJANGO-REST-FRAMEWORK
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'EXCEPTION_HANDLER': 'utils.exception.handler.custom_exception_handler',
-}
 
 # Template
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
@@ -114,12 +91,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
             ],
         },
     },
 ]
-
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -156,6 +131,3 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-# jet 설정
-JET_SIDE_MENU_COMPACT = True
