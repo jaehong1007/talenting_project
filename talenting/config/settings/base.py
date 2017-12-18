@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'member',
     'hosting',
     'event',
-    'message',
+    'fcm',
     'corsheaders',
 ]
 
