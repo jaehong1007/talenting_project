@@ -29,7 +29,7 @@ class Hosting(models.Model):
     Representation.
         A user can only one hosting object.
         primary_photo take hosting_thumbnail from HostingPhoto model, it would use for representing hosting list.
-
+        hosting_thumbnail refer to ./media/CACHE/image/hosting.
     House.
         To input multiple language from user, ArrayField in Postgres is applied.
 
@@ -105,7 +105,10 @@ class Hosting(models.Model):
 
     @receiver([post_delete, post_save], sender='hosting.HostingReview')
     def get_recommend_counter(sender, instance, **kwargs):
-        reviews = instance.place.get_hosting_reviews()
+        """
+        This method executes when HostingReview object save and delete.
+        """
+        reviews = instance.place.get_hosting_reviews()  # instance is a HostingReview object.
         count = 0
         for rev in reviews:
             if rev.recommend:
@@ -120,6 +123,7 @@ class Hosting(models.Model):
         return f'{self.owner.get_full_name()}'
 
     class Meta:
+        #
         ordering = ['-has_photo', '-recommend_counter']
 
     object = HostingManager()
@@ -128,7 +132,7 @@ class Hosting(models.Model):
 class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
     hosting_image = models.ImageField(upload_to='hosting', blank=True)
-    hosting_thumbnail = ImageSpecField(source='hosting_image',
+    hosting_thumbnail = ImageSpecField(source='hosting_image',  # thumbnail is stored in .media/CACHE/images folder.
                                        processors=[ResizeToFit(767)],
                                        format='JPEG',
                                        options={'quality': 85})
@@ -136,13 +140,13 @@ class HostingPhoto(models.Model):
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'Photo: {self.caption}({self.type})'
-
     def save(self, *args, **kwargs):
         super(HostingPhoto, self).save(*args, **kwargs)
         if self.place:
             self.place.get_primary_photo()
+
+    def __str__(self):
+        return f'Photo: {self.caption}({self.type})'
 
     class Meta:
         ordering = ['-created_at']
@@ -160,8 +164,11 @@ class HostingReview(models.Model):
         return f'Author: {self.author.first_name}'
 
     def is_editable(self):
+        """
+        After update period ends, user doesn't allow to update and delete hosting review.
+        """
         period_end = self.created_at + timezone.timedelta(
-            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))
+            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))  # 2 days of review update period.
         if timezone.now() > period_end:
             return False
         return True
@@ -171,6 +178,11 @@ class HostingReview(models.Model):
 
 
 class HostingRequest(models.Model):
+    """
+    User send request to stay to host.
+
+    * All fields are required.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
     arrival_date = models.DateField()
