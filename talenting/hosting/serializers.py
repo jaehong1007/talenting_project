@@ -39,6 +39,10 @@ class HostingReviewSerializer(serializers.ModelSerializer):
             'created_at',
         )
 
+    def create(self, validated_data):
+        obj = HostingReview.objects.create(**validated_data)
+        return obj
+
 
 class HostingSerializer(serializers.ModelSerializer):
     pk = serializers.PrimaryKeyRelatedField(read_only=True)
