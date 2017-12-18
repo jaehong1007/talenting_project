@@ -47,6 +47,7 @@ class HostingReviewSerializer(serializers.ModelSerializer):
 class HostingSerializer(serializers.ModelSerializer):
     pk = serializers.PrimaryKeyRelatedField(read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    wish_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Hosting
@@ -86,7 +87,14 @@ class HostingSerializer(serializers.ModelSerializer):
             'published',
             'created_at',
             'updated_at',
+            'wish_status',
         )
+
+        def get_wish_status(self, obj, **kwargs):
+            user_pk = self.context.get("user_pk")
+            if obj.wish_hosting.filter(pk=user_pk).exists():
+                return True
+            return False
 
 
 class HostingRequestSerializer(serializers.ModelSerializer):

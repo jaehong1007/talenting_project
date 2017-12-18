@@ -1,21 +1,37 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException
-from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
 
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from utils.permissions import IsAuthorOrReadOnly
+from .utils.pagination import EventPagination
+from member.serializer import UserSerializer
+from .serializer import EventSerializer, PhotoSerializer
+
+from .models import Event, Photo
+from .serializer import EventSerializer
 from .utils.pagination import EventPagination
 from .utils.permissions import IsOwnerOrReadOnly
-from member.serializer import UserSerializer
-from .serializer import EventSerializer
-from .models import Event, Photo
 
 
 class EventList(generics.ListCreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     pagination_class = EventPagination
+    authentication_classes = (TokenAuthentication,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self,
+            'user_pk': self.request.user.pk
+        }
 
 
 class EventDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -23,13 +39,23 @@ class EventDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'event_pk'
     serializer_class = EventSerializer
     permission_classes = (
-        IsOwnerOrReadOnly,
+        IsAuthorOrReadOnly,
     )
+    authentication_classes = (TokenAuthentication,)
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self,
+            'user_pk': self.request.user.pk
+        }
 
 
 class EventParticipateToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'
+    authentication_classes = (TokenAuthentication,)
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -45,28 +71,77 @@ class EventParticipateToggle(generics.GenericAPIView):
             'event': EventSerializer(instance).data,
             'result': participate_status,
         }
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
-class EventPhoto(generics.ListCreateAPIView):
-    queryset = Photo.objects.all()
+class EventPhotoList(generics.ListCreateAPIView):
+    queryset = Event.objects.all
+    serializer_class = PhotoSerializer
+    authentication_classes = (TokenAuthentication,)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
-class WishListAddEvent(generics.GenericAPIView):
+class EventPhotoDetail(APIView):
+    queryset = Event.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get_object(self, pk):
+        obj = get_object_or_404(Photo, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        photo = self.get_object(pk=kwargs['photo_pk'])
+        serializer = PhotoSerializer(photo)
+        data = {
+            'hosting': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    def put(self, request, *args, **kwargs):
+        photo = self.get_object(pk=kwargs['photo_pk'])
+        serializer = PhotoSerializer(photo, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            data = {
+                'hosting': serializer.data,
+                'code': 200,
+                'msg': '',
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        photo = self.get_object(pk=kwargs['photo_pk'])
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.wish_event.filter(pk=instance.pk).exists():
-            user.wish_event.add(instance)
-        else:
-            raise APIException('This event is already in my wish list items')
         data = {
             'user': user.pk,
             'event': instance.pk,
-            'code': status.HTTP_201_CREATED,
-            'msg': ''
         }
-        return Response(data=data, status=status.HTTP_201_CREATED)
+        if not user.wish_event.filter(pk=instance.pk).exists():
+            user.wish_event.add(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_event.remove(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': "Get deleted from the wish list"
+            })
+        return Response(data=data, status=status.HTTP_200_OK)

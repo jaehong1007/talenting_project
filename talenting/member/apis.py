@@ -25,7 +25,7 @@ from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
-    EventParticipateSerializer, MyTripSerializer
+    MyEventSerializer, MyTripSerializer
 
 from .tasks import send_mail_task
 
@@ -156,16 +156,26 @@ class PasswordReset(generics.UpdateAPIView):
 
         if serializer.is_valid(raise_exception=True):
             if not user.check_password(serializer.data.get("old_password")):
-                print(serializer.data['old_password'])
                 raise APIException('Try again with the right password')
             user.set_password(serializer.data['new_password2'])
             user.save()
             data = {
-                'user': user,
+                'user': LogInSerializer(user).data,
                 'code': status.HTTP_200_OK,
                 'msg': ''
             }
             return Response(data=data, status=status.HTTP_200_OK)
+
+
+class SignOut(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, *args, **kwargs):
+        if not request.user.check_password(request.data['password']):
+            raise APIException('Wrong password')
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
@@ -176,7 +186,7 @@ class ProfileRetrieveUpdate(MyRetrieveUpdateAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = ProfileSerializer(instance)
+        serializer = ProfileSerializer(instance, context={'user_pk': self.request.user.pk})
         data = {
             self.model_name(): serializer.data,
             'code': status.HTTP_200_OK,
@@ -223,7 +233,7 @@ class EventParticipateList(APIView):
         self.check_object_permissions(self.request, user)
 
         participate_event = user.participants.all()
-        serializer = EventParticipateSerializer(participate_event, many=True)
+        serializer = MyEventSerializer(participate_event, many=True)
         data = {
             'event': serializer.data,
             'code': status.HTTP_200_OK,
@@ -242,11 +252,16 @@ class WishListRetrieve(APIView):
 
         wish_hostings = user.wish_hosting.all()
         wish_events = user.wish_event.all()
+        wish_profiles = user.wish_profile.all()
+
         wish_hostings_serializer = WishHostingSerializer(wish_hostings, many=True)
         wish_event_serializer = WishEventSerializer(wish_events, many=True)
+        wish_profile_serializer = ProfileSerializer(wish_profiles, many=True)
+
         data = {
             'hosting': wish_hostings_serializer.data,
             'event': wish_event_serializer.data,
+            'profile': wish_profile_serializer.data,
             'code': status.HTTP_200_OK,
             'msg': ''
         }
@@ -263,7 +278,7 @@ class HostingWishListDelete(APIView):
 
         selected_hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         user.wish_hosting.remove(selected_hosting)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class EventWishListDelete(APIView):
@@ -276,7 +291,45 @@ class EventWishListDelete(APIView):
 
         selected_event = get_object_or_404(Event, pk=kwargs['event_pk'])
         user.wish_event.remove(selected_event)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
+
+
+class ProfileWishListDelete(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsProfileOwner,)
+
+    def delete(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        self.check_object_permissions(self.request, user)
+
+        selected_profile = get_object_or_404(Profile, pk=kwargs['profile_pk'])
+        user.wish_profile.remove(selected_profile)
+        return Response(status=status.HTTP_200_OK)
+
+
+class WishListProfileToggle(generics.GenericAPIView):
+    queryset = Profile.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        data = {
+            'user': user.pk,
+            'hosting': instance.pk
+        }
+        if not user.wish_profile.filter(pk=instance.pk).exists():
+            user.wish_profile.add(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': 'Added on the wish list'
+            })
+        else:
+            user.wish_profile.remove(instance)
+            data.update({
+                'code': status.HTTP_200_OK,
+                'msg': "Get deleted from the wish list"
+            })
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class MyTripRetrieveUpdateDeleteView(MyRetrieveUpdateDestroyAPIView):
