@@ -211,7 +211,7 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     permission_classes = (IsProfileUserOrReadOnly,)
 
 
-class GuestReviewCreate(MyListCreateAPIView):
+class GuestReviewListCreate(MyListCreateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = GuestReview.objects.all()
     serializer_class = GuestReviewSerializer
@@ -220,9 +220,8 @@ class GuestReviewCreate(MyListCreateAPIView):
         guest = User.objects.get(pk=self.kwargs['pk'])
         review = serializer.save(host=self.request.user, guest=guest)
         if review.recommend:
-            guest.recommendatons += 1
+            guest.recommendations += 1
             guest.save()
-
 
 class EventParticipateList(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)

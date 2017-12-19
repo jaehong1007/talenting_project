@@ -18,18 +18,18 @@ CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
 CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
+
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
-config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
+
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
-# Static Path
+# Static Paths
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR
 ]
-STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -41,28 +41,26 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     'localhost',
     '127.0.0.1',
-    '.yabi.kr',
 ]
 
 # Application definition
 INSTALLED_APPS = [
-    'jet.dashboard',
-    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'storages',
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
-
+    'imagekit',
+    'fcm_django',
     'member',
     'hosting',
     'event',
+    'fcm',
     'corsheaders',
 ]
 
@@ -76,13 +74,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = (
-    'localhost:3001',
-    'front.localhost:8013',
-    '.elasticbeanstalk.com',
-    'talenting-env.ap-northeast-2.elasticbeanstalk.com',
-)
-
 ROOT_URLCONF = 'config.urls'
 
 # DJANGO-REST-FRAMEWORK
@@ -92,6 +83,18 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'EXCEPTION_HANDLER': 'utils.exception.handler.custom_exception_handler',
+}
+
+# FCM_DJANGO
+FCM_DJANGO_SETTINGS = {
+    "FCM_SERVER_KEY": "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4",
+    # true if you want to have only one active device per registered user at a time
+    # default: False
+    "ONE_DEVICE_PER_USER": False,
+    # devices to which notifications cannot be sent,
+    # are deleted upon receiving error response from FCM
+    # default: False
+    "DELETE_INACTIVE_DEVICES": False,
 }
 
 # Template
@@ -109,7 +112,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
             ],
         },
     },
@@ -146,13 +148,11 @@ EMAIL_PORT = 587
 
 # Internationalization
 LANGUAGE_CODE = 'ko-kr'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# jet 설정
-JET_SIDE_MENU_COMPACT = True
 
 # Review setting
 REVIEW_UPDATE_PERIOD = 86400  # second

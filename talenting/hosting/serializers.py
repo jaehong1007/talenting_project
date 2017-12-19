@@ -34,6 +34,7 @@ class HostingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hosting
+<<<<<<< HEAD
         fields = ('pk', 'owner', 'category', 'title', 'summary', 'primary_photo',
                   'recommend_counter', 'house_type', 'room_type', 'meal_type', 'internet',
                   'smoking', 'pet', 'rules', 'language', 'capacity', 'min_stay', 'max_stay',
@@ -47,6 +48,50 @@ class HostingSerializer(serializers.ModelSerializer):
         """
         user_pk = self.context.get("user_pk")  # get user.pk from HostingSerializer.context
         if obj.wish_hosting.filter(pk=user_pk).exists():  # Hosting.wish_hosting.filter
+=======
+        fields = (
+            'pk',
+            'owner',
+            'category',
+            'title',
+            'summary',
+            'primary_photo',
+            'recommend_counter',
+            'house_type',
+            'room_type',
+            'meal_type',
+            'internet',
+            'smoking',
+            'pet',
+            'rules',
+            'language',
+            'capacity',
+            'min_stay',
+            'max_stay',
+            'description',
+            'to_do',
+            'exchange',
+            'neighborhood',
+            'transportation',
+            'country',
+            'city',
+            'distinct',
+            'street',
+            'address',
+            'postcode',
+            'lat',
+            'lon',
+            'has_photo',
+            'published',
+            'created_at',
+            'updated_at',
+            'wish_status',
+        )
+
+    def get_wish_status(self, obj, **kwargs):
+        user_pk = self.context.get("user_pk")
+        if obj.wish_hosting.filter(pk=user_pk).exists():
+>>>>>>> 9698e81015ff95713615a3ad4da265086b78f35e
             return True
         return False
 

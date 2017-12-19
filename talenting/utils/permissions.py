@@ -31,12 +31,12 @@ class IsPlaceOwnerOrReadOnly(permissions.BasePermission):
         return obj.place.owner == request.user
 
 
-class IsPlaceOwnerOrReadOnly(permissions.BasePermission):
+class IsEventOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return obj.place.owner == request.user
+        return obj.events.user == request.user
 
 
 class IsProfileOwner(permissions.BasePermission):

@@ -12,7 +12,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('pk', 'email')
+        fields = ('pk', 'email', 'first_name', 'last_name')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -88,13 +88,14 @@ class ProfileSerializer(serializers.ModelSerializer):
     age = serializers.SerializerMethodField('_calculate_age')
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
+    recommendations = serializers.SerializerMethodField()
     wish_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = ('pk', 'first_name', 'last_name', 'birth', 'gender', 'self_intro', 'talent_category',
-                  'talent_intro', 'country', 'city', 'occupation',
-                  'available_languages', 'images', 'age', 'wish_status')
+                  'talent_intro', 'country', 'city', 'occupation', 'available_languages', 'images', 'age',
+                  'wish_status', 'recommendations')
 
     def _calculate_age(self, obj):
         if obj.birth:
@@ -113,12 +114,17 @@ class ProfileSerializer(serializers.ModelSerializer):
             return True
         return False
 
+    def get_recommendations(self, obj):
+        return obj.user.recommendations
+
 
 class GuestReviewSerializer(serializers.ModelSerializer):
+    host = UserSerializer(read_only=True)
+    guest = UserSerializer(read_only=True)
+
     class Meta:
         model = GuestReview
         fields = ('host', 'guest', 'review', 'recommend', 'created_at')
-        read_only_fields = ('host', 'guest', 'created_at')
 
 
 class WishHostingSerializer(serializers.ModelSerializer):

@@ -6,7 +6,6 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from imagekit.models import ImageSpecField
 from pilkit.processors import ResizeToFit
-from rest_framework import generics
 from rest_framework.authtoken.models import Token
 
 
@@ -57,9 +56,15 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # wish list
+<<<<<<< HEAD
     wish_hosting = models.ManyToManyField('hosting.Hosting', related_name='wish_hosting')
     wish_event = models.ManyToManyField('event.Event', related_name='wish_event')
     wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile')
+=======
+    wish_hosting = models.ManyToManyField('hosting.Hosting', related_name= 'wish_hosting', blank=True)
+    wish_event = models.ManyToManyField('event.Event', related_name='wish_event', blank=True)
+    wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile', blank=True)
+>>>>>>> 9698e81015ff95713615a3ad4da265086b78f35e
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
