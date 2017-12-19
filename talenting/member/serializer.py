@@ -57,6 +57,7 @@ class LogInSerializer(serializers.ModelSerializer):
         model = User
         fields = ('pk', 'email', 'password')
 
+
 class ProfileManageSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
@@ -76,6 +77,7 @@ class ProfileManageSerializer(serializers.ModelSerializer):
 
 class ProfileImageSerializer(serializers.ModelSerializer):
     profile_thumbnail = serializers.ImageField(read_only=True)
+
     class Meta:
         model = ProfileImage
         fields = ('pk', 'image', 'profile_thumbnail', 'created_at')
@@ -87,7 +89,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     wish_status = serializers.SerializerMethodField()
-
 
     class Meta:
         model = Profile

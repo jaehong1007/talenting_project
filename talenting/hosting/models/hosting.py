@@ -141,7 +141,8 @@ class Hosting(models.Model):
 class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
     hosting_image = models.ImageField(upload_to='hosting', blank=True)
-    hosting_thumbnail = ImageSpecField(source='hosting_image',  # thumbnail is stored in .media/CACHE/images folder.
+    # thumbnail is stored in .media/CACHE/images folder
+    hosting_thumbnail = ImageSpecField(source='hosting_image',
                                        processors=[ResizeToFit(767)],
                                        format='JPEG',
                                        options={'quality': 85})
@@ -192,7 +193,8 @@ class HostingRequest(models.Model):
 
     * All fields are required.
     """
-    user = models.ForeignKey(User, on_delete=SET(get_sentinel_user())) # As
+    # When user delete account, assign sentinel user.
+    user = models.ForeignKey(User, on_delete=SET(get_sentinel_user()))
     host = models.ForeignKey(User, on_delete=SET(get_sentinel_user()), related_name='host')
     place = models.ForeignKey(Hosting)
     arrival_date = models.DateField()

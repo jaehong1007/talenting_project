@@ -12,7 +12,8 @@ from rest_framework.views import APIView
 from hosting import options
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly, IsAuthorOrReadOnly
 
-from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, HostingRequestSerializer
+from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, \
+    HostingRequestSerializer
 from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
 
 User = get_user_model()
@@ -40,7 +41,11 @@ class HostingList(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = HostingSerializer(queryset, many=True, context={'user_pk': request.user.pk})
+        serializer = HostingSerializer(
+            queryset,
+            many=True,
+            context={'user_pk': request.user.pk}  # Send user.pk to get wish status.
+        )
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
