@@ -344,7 +344,7 @@ class HostingRequestList(APIView):
         if not HostingRequest.objects.filter(user=request.user, place=hosting).exists():
             serializer = HostingRequestSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                serializer.save(user=request.user, place=hosting)
+                serializer.save(user=request.user, host=hosting.user, place=hosting)
                 data = {
                     'hosting_request': serializer.data,
                     'code': 201,

@@ -57,5 +57,5 @@ class HostingRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HostingRequest
-        fields = ('pk', 'user', 'place', 'arrival_date', 'departure_date',
+        fields = ('pk', 'user', 'host', 'place', 'arrival_date', 'departure_date',
                   'number_travelers', 'description', 'accepted', 'created_at',)

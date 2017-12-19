@@ -157,9 +157,17 @@ class HostingPhoto(models.Model):
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
-    host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL)
+    author = models.ForeignKey(User,
+                               null=True,
+                               on_delete=models.SET_NULL,
+                               related_name='author')
+    host = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET_NULL,
+                             related_name='host')
+    place = models.ForeignKey(Hosting,
+                              null=True,
+                              on_delete=models.SET_NULL)
     hosting_review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -188,8 +196,14 @@ class HostingRequest(models.Model):
     * All fields are required.
     """
     # When user delete account, assign sentinel user.
-    user = models.ForeignKey(User, on_delete=SET(get_sentinel_user()))
-    host = models.ForeignKey(User, on_delete=SET(get_sentinel_user()), related_name='host')
+    user = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET(get_sentinel_user),
+                             related_name='sender')
+    host = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET(get_sentinel_user),
+                             related_name='receiver')
     place = models.ForeignKey(Hosting)
     arrival_date = models.DateField()
     departure_date = models.DateField()
@@ -201,3 +215,9 @@ class HostingRequest(models.Model):
 
     def __str__(self):
         return f'Request: {self.place}'
+
+    @receiver([post_delete], sender=User)
+    def ensure_request_status(sender, instance, **kwargs):
+        instance.accepted = False
+        instance.canceled = True
+        instance.save()
