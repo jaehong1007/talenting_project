@@ -121,6 +121,7 @@ class EventPhotoDetail(APIView):
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'

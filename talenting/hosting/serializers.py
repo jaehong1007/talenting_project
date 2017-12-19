@@ -90,11 +90,11 @@ class HostingSerializer(serializers.ModelSerializer):
             'wish_status',
         )
 
-        def get_wish_status(self, obj, **kwargs):
-            user_pk = self.context.get("user_pk")
-            if obj.wish_hosting.filter(pk=user_pk).exists():
-                return True
-            return False
+    def get_wish_status(self, obj, **kwargs):
+        user_pk = self.context.get("user_pk")
+        if obj.wish_hosting.filter(pk=user_pk).exists():
+            return True
+        return False
 
 
 class HostingRequestSerializer(serializers.ModelSerializer):

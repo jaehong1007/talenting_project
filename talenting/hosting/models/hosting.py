@@ -41,7 +41,7 @@ class Hosting(models.Model):
     """
 
     # Representation
-    owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from django.db.models import Q
 from rest_framework import status, generics
-from rest_framework.authentication import TokenAuthentication, BaseAuthentication
+from rest_framework.authentication import TokenAuthentication, BaseAuthentication, BasicAuthentication
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -60,6 +60,19 @@ class HostingList(APIView):
             }
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+#
+# class HostingListOwn(generics.ListAPIView):
+#     authentication_classes = (TokenAuthentication, BasicAuthentication)
+#     permission_classes = (IsOwnerOrReadOnly,)
+#     serializer_class = HostingSerializer
+#
+#     queryset = Hosting.objects.all()
+#
+#     def get_object(self):
+
+
+
 
 
 class HostingDetail(APIView):
