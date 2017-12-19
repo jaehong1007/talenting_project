@@ -3,6 +3,7 @@ from datetime import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import SET
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
@@ -10,6 +11,7 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
 from config import settings
+from utils.deletion import get_sentinel_user
 from ..options import *
 
 User = get_user_model()
@@ -29,6 +31,7 @@ class Hosting(models.Model):
     Representation.
         A user can only one hosting object.
         primary_photo take hosting_thumbnail from HostingPhoto model, it would use for representing hosting list.
+        hosting_thumbnail refer to ./media/CACHE/image/hosting.
 
     House.
         To input multiple language from user, ArrayField in Postgres is applied.
@@ -41,7 +44,7 @@ class Hosting(models.Model):
     """
 
     # Representation
-    owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     category = models.SmallIntegerField(choices=CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
@@ -105,7 +108,10 @@ class Hosting(models.Model):
 
     @receiver([post_delete, post_save], sender='hosting.HostingReview')
     def get_recommend_counter(sender, instance, **kwargs):
-        reviews = instance.place.get_hosting_reviews()
+        """
+        This method executes when HostingReview object save and delete.
+        """
+        reviews = instance.place.get_hosting_reviews()  # instance is a HostingReview object.
         count = 0
         for rev in reviews:
             if rev.recommend:
@@ -120,6 +126,7 @@ class Hosting(models.Model):
         return f'{self.owner.get_full_name()}'
 
     class Meta:
+        #
         ordering = ['-has_photo', '-recommend_counter']
 
     object = HostingManager()
@@ -128,6 +135,7 @@ class Hosting(models.Model):
 class HostingPhoto(models.Model):
     place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
     hosting_image = models.ImageField(upload_to='hosting', blank=True)
+    # thumbnail is stored in .media/CACHE/images folder
     hosting_thumbnail = ImageSpecField(source='hosting_image',
                                        processors=[ResizeToFit(767)],
                                        format='JPEG',
@@ -136,22 +144,30 @@ class HostingPhoto(models.Model):
     type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'Photo: {self.caption}({self.type})'
-
     def save(self, *args, **kwargs):
         super(HostingPhoto, self).save(*args, **kwargs)
         if self.place:
             self.place.get_primary_photo()
+
+    def __str__(self):
+        return f'Photo: {self.caption}({self.type})'
 
     class Meta:
         ordering = ['-created_at']
 
 
 class HostingReview(models.Model):
-    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='author')
-    host = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    place = models.ForeignKey(Hosting, null=True, on_delete=models.SET_NULL)
+    author = models.ForeignKey(User,
+                               null=True,
+                               on_delete=models.SET_NULL,
+                               related_name='author')
+    host = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET_NULL,
+                             related_name='host')
+    place = models.ForeignKey(Hosting,
+                              null=True,
+                              on_delete=models.SET_NULL)
     hosting_review = models.TextField()
     recommend = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -160,8 +176,11 @@ class HostingReview(models.Model):
         return f'Author: {self.author.first_name}'
 
     def is_editable(self):
+        """
+        After update period ends, user doesn't allow to update and delete hosting review.
+        """
         period_end = self.created_at + timezone.timedelta(
-            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))
+            seconds=getattr(settings, 'REVIEW_UPDATE_PERIOD'))  # 2 days of review update period.
         if timezone.now() > period_end:
             return False
         return True
@@ -171,14 +190,34 @@ class HostingReview(models.Model):
 
 
 class HostingRequest(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    """
+    User send request to stay to host.
+
+    * All fields are required.
+    """
+    # When user delete account, assign sentinel user.
+    user = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET(get_sentinel_user),
+                             related_name='sender')
+    host = models.ForeignKey(User,
+                             null=True,
+                             on_delete=models.SET(get_sentinel_user),
+                             related_name='receiver')
+    place = models.ForeignKey(Hosting)
     arrival_date = models.DateField()
     departure_date = models.DateField()
     number_travelers = models.IntegerField()
     description = models.TextField()
     accepted = models.BooleanField(default=False)
+    canceled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'Request: {self.place}'
+
+    @receiver([post_delete], sender=User)
+    def ensure_request_status(sender, instance, **kwargs):
+        instance.accepted = False
+        instance.canceled = True
+        instance.save()

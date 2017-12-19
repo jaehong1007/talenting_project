@@ -200,6 +200,7 @@ class EventPhotoDetail(MyRetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthorOrReadOnly,)
 
 
+
 class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()
     lookup_url_kwarg = 'event_pk'

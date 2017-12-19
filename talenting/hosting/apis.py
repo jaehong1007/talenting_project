@@ -2,16 +2,18 @@ from django.contrib.auth import get_user_model
 
 from django.db.models import Q
 from rest_framework import status, generics
-from rest_framework.authentication import TokenAuthentication, BaseAuthentication
-from rest_framework.exceptions import APIException, NotFound, PermissionDenied
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hosting import options
 from utils.permissions import IsOwnerOrReadOnly, IsPlaceOwnerOrReadOnly, IsAuthorOrReadOnly
 
-from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, HostingRequestSerializer
+from .serializers import HostingSerializer, HostingPhotoSerializer, HostingReviewSerializer, \
+    HostingRequestSerializer
 from .models.hosting import Hosting, HostingPhoto, HostingReview, HostingRequest
 
 User = get_user_model()
@@ -25,7 +27,7 @@ class HostingList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
@@ -39,7 +41,11 @@ class HostingList(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = HostingSerializer(queryset, many=True, context={'user_pk': request.user.pk})
+        serializer = HostingSerializer(
+            queryset,
+            many=True,
+            context={'user_pk': request.user.pk}  # Send user.pk to get wish status.
+        )
         # This is hard coding for API structure for Android.
         data = {
             'hosting': serializer.data,
@@ -70,7 +76,7 @@ class HostingDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -118,7 +124,7 @@ class PhotoList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -156,7 +162,7 @@ class PhotoDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -203,7 +209,7 @@ class HostingReviewList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -248,7 +254,7 @@ class HostingReviewDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -318,7 +324,8 @@ class HostingOptionsView(APIView):
 
 
 class HostingRequestList(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
@@ -337,7 +344,7 @@ class HostingRequestList(APIView):
         if not HostingRequest.objects.filter(user=request.user, place=hosting).exists():
             serializer = HostingRequestSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                serializer.save(user=request.user, place=hosting)
+                serializer.save(user=request.user, host=hosting.user, place=hosting)
                 data = {
                     'hosting_request': serializer.data,
                     'code': 201,
@@ -349,8 +356,8 @@ class HostingRequestList(APIView):
 
 
 class HostingRequestDetail(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
-    permission_classes = (IsAuthorOrReadOnly,)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthorOrReadOnly, IsAuthenticated)
 
     def get_object(self, pk):
         obj = get_object_or_404(HostingRequest, pk=pk)
@@ -364,7 +371,7 @@ class HostingRequestDetail(APIView):
 
 
 class HostingRequestAccept(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def put(self, request, *args, **kwargs):
