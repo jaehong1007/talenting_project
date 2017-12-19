@@ -3,6 +3,7 @@ from datetime import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import SET
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
@@ -13,6 +14,14 @@ from config import settings
 from ..options import *
 
 User = get_user_model()
+
+
+def get_sentinel_user():
+    return User.objects.get_or_create(
+        email='sentinel@gmail.com',
+        first_name='deleted',
+        last_name='sentinel',
+    )
 
 
 class HostingManager(models.Model):
@@ -183,13 +192,15 @@ class HostingRequest(models.Model):
 
     * All fields are required.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    place = models.ForeignKey(Hosting, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=SET(get_sentinel_user())) # As
+    host = models.ForeignKey(User, on_delete=SET(get_sentinel_user()), related_name='host')
+    place = models.ForeignKey(Hosting)
     arrival_date = models.DateField()
     departure_date = models.DateField()
     number_travelers = models.IntegerField()
     description = models.TextField()
     accepted = models.BooleanField(default=False)
+    canceled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

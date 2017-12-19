@@ -2,9 +2,10 @@ from django.contrib.auth import get_user_model
 
 from django.db.models import Q
 from rest_framework import status, generics
-from rest_framework.authentication import TokenAuthentication, BaseAuthentication, BasicAuthentication
-from rest_framework.exceptions import APIException, NotFound, PermissionDenied
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -25,7 +26,7 @@ class HostingList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
@@ -61,6 +62,7 @@ class HostingList(APIView):
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
+
 #
 # class HostingListOwn(generics.ListAPIView):
 #     authentication_classes = (TokenAuthentication, BasicAuthentication)
@@ -83,7 +85,7 @@ class HostingDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -131,7 +133,7 @@ class PhotoList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -169,7 +171,7 @@ class PhotoDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -216,7 +218,7 @@ class HostingReviewList(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
@@ -261,7 +263,7 @@ class HostingReviewDetail(APIView):
     * Allow owner to perform any method.
     * Only safe method is available for who is not owner.
     """
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def get_object(self, pk):
@@ -331,7 +333,8 @@ class HostingOptionsView(APIView):
 
 
 class HostingRequestList(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
@@ -362,8 +365,8 @@ class HostingRequestList(APIView):
 
 
 class HostingRequestDetail(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
-    permission_classes = (IsAuthorOrReadOnly,)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
+    permission_classes = (IsAuthorOrReadOnly, IsAuthenticated)
 
     def get_object(self, pk):
         obj = get_object_or_404(HostingRequest, pk=pk)
@@ -377,7 +380,7 @@ class HostingRequestDetail(APIView):
 
 
 class HostingRequestAccept(APIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    authentication_classes = (TokenAuthentication, BasicAuthentication)
     permission_classes = (IsPlaceOwnerOrReadOnly,)
 
     def put(self, request, *args, **kwargs):
