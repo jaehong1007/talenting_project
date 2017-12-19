@@ -223,6 +223,7 @@ class GuestReviewListCreate(MyListCreateAPIView):
             guest.recommendations += 1
             guest.save()
 
+
 class EventParticipateList(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)

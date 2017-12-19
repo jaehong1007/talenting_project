@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication, BaseAuthentication, BasicAuthentication
@@ -5,15 +6,17 @@ from rest_framework.authentication import TokenAuthentication, BaseAuthenticatio
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils.api import MyCreateAPIView, MyRetrieveUpdateDestroyAPIView
+from utils.api import MyRetrieveUpdateDestroyAPIView
 from utils.permissions import IsAuthorOrReadOnly, IsEventOwnerOrReadOnly
 from .utils.pagination import EventPagination
-from member.serializer import UserSerializer
-from .serializer import EventSerializer, EventParticipateSerializer, EventPhotoSerializer
+from member.serializer import UserSerializer, MyEventSerializer
+from .serializer import EventParticipateSerializer, EventPhotoSerializer
 
-from .models import Event, EventPhoto
+from .models import Event, EventPhoto, EventComment
 from .serializer import EventSerializer
 from .utils.permissions import IsOwnerOrReadOnly
+
+User = get_user_model()
 
 
 class EventList(APIView):
@@ -39,7 +42,6 @@ class EventList(APIView):
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = EventSerializer(queryset, many=True, context={'user_pk': request.user.pk})
-        # This is hard coding for API structure for Android.
         data = {
             'event': serializer.data,
             'code': 200,
@@ -51,7 +53,6 @@ class EventList(APIView):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(author=request.user)
-            # This is hard coding for API structure for Android.
             data = {
                 'event': serializer.data,
                 'code': 201,
@@ -78,22 +79,22 @@ class EventDetail(APIView):
         return obj
 
     def get(self, request, *args, **kwargs):
-        hosting = self.get_object(pk=kwargs['event_pk'])
-        serializer = EventSerializer(hosting, context={'user_pk': request.user.pk})
+        event = self.get_object(pk=kwargs['event_pk'])
+        serializer = EventSerializer(event, context={'user_pk': request.user.pk})
         data = {
-            'hosting': serializer.data,
+            'event': serializer.data,
             'code': 200,
             'msg': '',
         }
         return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
-        hosting = self.get_object(pk=kwargs['hosting_pk'])
-        serializer = EventSerializer(hosting, data=request.data)
+        event = self.get_object(pk=kwargs['event_pk'])
+        serializer = EventSerializer(event, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             data = {
-                'hosting': serializer.data,
+                'event': serializer.data,
                 'code': 200,
                 'msg': '',
             }
@@ -101,8 +102,8 @@ class EventDetail(APIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        hosting = self.get_object(pk=kwargs['event_pk'])
-        hosting.delete()
+        event = self.get_object(pk=kwargs['event_pk'])
+        event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # class EventList(generics.ListCreateAPIView):
@@ -225,30 +226,70 @@ class WishListEventToggle(generics.GenericAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class EventCommentList(generics.ListCreateAPIView):
-    authentication_classes = (TokenAuthentication, BaseAuthentication)
+class EventCreatedList(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
-        event = get_object_or_404(Event, pk=kwargs['event_pk'])
-        comments = event.eventphoto_set.all()
-        serializer = EventPhotoSerializer(comments, many=True)
+        event = Event.objects.filter(author=request.user)
+        serializer = MyEventSerializer(event, many=True)
         data = {
-            'event_comment': serializer.data,
+            'event': serializer.data,
+            'code': status.HTTP_200_OK,
+            'msg': 'success'
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class CommentCreateList(generics.ListCreateAPIView):
+    queryset = EventComment.objects.all()
+    serializer_class = EventSerializer
+    authentication_classes = (TokenAuthentication,)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class CommentDetail(APIView):
+    """
+    Retrieve, update and delete a hosting post.
+
+    * Authenticate with token or username/password.
+    * Allow owner to perform any method.
+    * Only safe method is available for who is not owner.
+    """
+    authentication_classes = (TokenAuthentication, BaseAuthentication)
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_object(self, pk):
+        obj = get_object_or_404(EventComment, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        comment = self.get_object(pk=kwargs['comment_pk'])
+        serializer = EventSerializer(comment, context={'user_pk': request.user.pk})
+        data = {
+            'event': serializer.data,
             'code': 200,
             'msg': '',
         }
         return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
-        serializer = EventPhotoSerializer(data=request.data)
-        event = get_object_or_404(Event, pk=kwargs['event_pk'])
+    def put(self, request, *args, **kwargs):
+        comment = self.get_object(pk=kwargs['comment_pk'])
+        serializer = EventSerializer(comment, data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(events=event)
+            serializer.save()
             data = {
-                'event_comment': serializer.data,
-                'code': 201,
+                'event': serializer.data,
+                'code': 200,
                 'msg': '',
             }
-            return Response(data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        comment = self.get_object(pk=kwargs['comment_pk'])
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
