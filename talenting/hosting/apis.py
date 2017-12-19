@@ -68,20 +68,6 @@ class HostingList(APIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-#
-# class HostingListOwn(generics.ListAPIView):
-#     authentication_classes = (TokenAuthentication, BasicAuthentication)
-#     permission_classes = (IsOwnerOrReadOnly,)
-#     serializer_class = HostingSerializer
-#
-#     queryset = Hosting.objects.all()
-#
-#     def get_object(self):
-
-
-
-
-
 class HostingDetail(APIView):
     """
     Retrieve, update and delete a hosting post.

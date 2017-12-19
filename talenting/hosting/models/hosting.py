@@ -11,17 +11,10 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
 from config import settings
+from utils.deletion import get_sentinel_user
 from ..options import *
 
 User = get_user_model()
-
-
-def get_sentinel_user():
-    return User.objects.get_or_create(
-        email='sentinel@gmail.com',
-        first_name='deleted',
-        last_name='sentinel',
-    )
 
 
 class HostingManager(models.Model):
@@ -39,6 +32,7 @@ class Hosting(models.Model):
         A user can only one hosting object.
         primary_photo take hosting_thumbnail from HostingPhoto model, it would use for representing hosting list.
         hosting_thumbnail refer to ./media/CACHE/image/hosting.
+
     House.
         To input multiple language from user, ArrayField in Postgres is applied.
 
