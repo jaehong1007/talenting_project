@@ -223,6 +223,7 @@ class GuestReviewListCreate(MyListCreateAPIView):
             guest.recommendations += 1
             guest.save()
 
+
 class EventParticipateList(APIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsProfileOwner,)
@@ -359,3 +360,18 @@ class MyTripListCreateView(MyListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class MyTripCreatedList(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        mytrips = MyTrip.objects.filter(user=self.request.user)
+        serializer = MyTripSerializer(mytrips, many=True)
+        data = {
+            'my_trip': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
