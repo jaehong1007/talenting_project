@@ -34,7 +34,7 @@ class HostingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hosting
-        fields = ('pk', 'owner', 'category', 'title', 'summary', 'primary_photo',
+        fields = ('owner', 'category', 'title', 'summary', 'primary_photo',
                   'recommend_counter', 'house_type', 'room_type', 'meal_type', 'internet',
                   'smoking', 'pet', 'rules', 'language', 'capacity', 'min_stay', 'max_stay',
                   'description', 'to_do', 'exchange', 'neighborhood', 'transportation',
