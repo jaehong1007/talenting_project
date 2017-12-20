@@ -32,16 +32,17 @@ class HostingList(APIView):
 
     def get_queryset(self):
         queryset = Hosting.objects.all()
+        # if each parameter does not exist in request, it assigns None.
         search_query = self.request.query_params.get('search_query', None)
         search_categories = self.request.query_params.get('search_categories', None)
 
         if search_query is not None:
-            queryset = queryset.filter(
+            queryset = Hosting.objects.filter(
                 Q(address__icontains=search_query)
             )
         if search_categories is not None:
             queryset = queryset.filter(
-                Q(category__icontains=search_categories)
+                Q(category__exact=search_categories)
             )
         return queryset
 
