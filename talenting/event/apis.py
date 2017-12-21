@@ -106,6 +106,7 @@ class EventDetail(APIView):
         hosting.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 # class EventList(generics.ListCreateAPIView):
 #     queryset = Event.objects.all()
 #     serializer_class = EventSerializer
@@ -198,7 +199,6 @@ class EventPhotoDetail(MyRetrieveUpdateDestroyAPIView):
     queryset = EventPhoto.objects.all()
     serializer_class = EventPhotoSerializer
     permission_classes = (IsAuthorOrReadOnly,)
-
 
 
 class WishListEventToggle(generics.GenericAPIView):

@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import SET
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save, pre_delete
 from django.dispatch import receiver
 
 from imagekit.models import ImageSpecField
@@ -119,14 +119,23 @@ class Hosting(models.Model):
         instance.place.recommend_counter = count
         instance.place.save()
 
-    def save(self, *args, **kwargs):
-        super(Hosting, self).save(*args, **kwargs)
+    @receiver([post_delete, post_save], sender='hosting.Hosting')
+    def is_host(sender, instance, **kwargs):
+        """
+        If a user have a hositng object, is_user property is Ture.
+        Otherwise, False.
+        """
+        if Hosting.objects.filter(pk=instance.owner.pk).exists():  # instance is a Hosting object.
+            instance.owner.is_host = True
+        else:
+            instance.owner.is_host = False
+        print(instance.owner.is_host)
+        instance.owner.save()
 
     def __str__(self):
         return f'{self.owner.get_full_name()}'
 
     class Meta:
-        #
         ordering = ['-has_photo', '-recommend_counter']
 
     object = HostingManager()

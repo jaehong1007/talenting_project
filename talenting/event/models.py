@@ -30,7 +30,7 @@ class Event(models.Model):
         processors=[ResizeToFit(767)],
         format='JPEG',
         options={'quality': 85}
-        )
+    )
 
     # Date
     opening_date = models.DateTimeField(auto_now_add=True)
@@ -97,6 +97,6 @@ class EventPhoto(models.Model):
                                      format='JPEG',
                                      options={'quality': 85}
                                      )
+
     def save(self, *args, **kwargs):
         super(EventPhoto, self).save(*args, **kwargs)
-

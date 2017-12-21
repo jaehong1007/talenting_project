@@ -23,7 +23,8 @@ from member.models import Profile, ProfileImage, GuestReview, MyTrip
 from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView, \
     MyListAPIView
 from utils.exception.api_exception import LogInException
-from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
+from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner, \
+    IsProfileImageUserOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
     MyEventSerializer, MyTripSerializer
@@ -209,7 +210,7 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
-    permission_classes = (IsProfileUserOrReadOnly,)
+    permission_classes = (IsProfileImageUserOrReadOnly,)
 
 
 class GuestReviewListCreate(MyListCreateAPIView):

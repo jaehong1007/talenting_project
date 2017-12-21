@@ -15,6 +15,13 @@ class IsProfileUserOrReadOnly(permissions.BasePermission):
         return str(obj.user.pk) == str(request.user.pk) and request.user.is_authenticated
 
 
+class IsProfileImageUserOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return str(obj.profile.user.pk) == str(request.user.pk) and request.user.is_authenticated
+
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
