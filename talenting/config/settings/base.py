@@ -18,18 +18,18 @@ CONFIG_SECRET_DIR = os.path.join(ROOT_DIR, '.config_secret')
 CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_common.json')
 CONFIG_SECRET_DEV_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_dev.json')
 CONFIG_SECRET_LOCAL_FILE = os.path.join(CONFIG_SECRET_DIR, 'settings_local.json')
+
 config_secret_common = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
-config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
+
 # Secret_key
 SECRET_KEY = config_secret_common['django']['secret_key']
 
-# Static Path
+# Static Paths
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR
 ]
-STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # Media Paths
 MEDIA_ROOT = os.path.join(ROOT_DIR, '.media')
@@ -41,7 +41,6 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     'localhost',
     '127.0.0.1',
-    '.yabi.kr',
 ]
 
 # Application definition
@@ -52,14 +51,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'storages',
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
     'imagekit',
     'fcm_django',
-
     'member',
     'hosting',
     'event',
@@ -76,13 +73,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-CORS_ORIGIN_WHITELIST = (
-    'localhost:3001',
-    'front.localhost:8013',
-    '.elasticbeanstalk.com',
-    'talenting-env.ap-northeast-2.elasticbeanstalk.com',
-)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -164,6 +154,7 @@ TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
 
 # Review setting
 REVIEW_UPDATE_PERIOD = 86400  # second

@@ -4,7 +4,7 @@ from ..apis import SignUp, LogIn, EmailIsUnique, ProfileRetrieveUpdate, ProfileI
     ProfileImageRetrieveUpdateDelete, GuestReviewListCreate, WishListRetrieve, HostingWishListDelete, \
     EventWishListDelete, \
     PasswordMissing, PasswordReset, EventParticipateList, ProfileWishListDelete, WishListProfileToggle, \
-    MyTripListCreateView, MyTripRetrieveUpdateDeleteView, SignOut
+    MyTripListCreateView, MyTripRetrieveUpdateDeleteView, SignOut, MyTripCreatedList
 
 urlpatterns = [
     #유저 인증
@@ -36,4 +36,5 @@ urlpatterns = [
     #여행 등록
     url(r'mytrip/$', MyTripListCreateView.as_view(), name='mytrip-list'),
     url(r'mytrip/(?P<mytrip_pk>\d+)/$', MyTripRetrieveUpdateDeleteView.as_view(), name='mytrip-detail'),
+    url(r'mytrip/created/$', MyTripCreatedList.as_view(), name='mytrip-created')
 ]

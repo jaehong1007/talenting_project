@@ -4,7 +4,6 @@ from ..apis import HostingList, HostingDetail, PhotoList, PhotoDetail, HostingRe
     HostingOptionsView, HostingRequestList, HostingRequestDetail, HostingRequestAccept, \
     WishListHostingToggle
 
-
 urlpatterns = [
     url(r'^$', HostingList.as_view(), name='hosting-list'),
     url(r'^(?P<hosting_pk>\d+)/$', HostingDetail.as_view(), name='hosting-detail'),

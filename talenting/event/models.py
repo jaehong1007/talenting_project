@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from imagekit.models import ImageSpecField
-from pilkit.processors import ResizeToFill
+from pilkit.processors import ResizeToFill, ResizeToFit
 
 from event.options import EVENT_CATEGORIES
 from .countries import COUNTRIES
@@ -14,6 +14,7 @@ class EventManager(models.Manager):
 
 
 class Event(models.Model):
+    # Content
     author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, default=1)
     event_categories = models.SmallIntegerField(_('categories'), choices=EVENT_CATEGORIES, default=1)
     title = models.CharField(max_length=20)
@@ -26,10 +27,10 @@ class Event(models.Model):
     primary_photo = models.ImageField(upload_to='event', max_length=255)
     primary_photo_thumbnail = ImageSpecField(
         source='primary_photo',
-        processors=[ResizeToFill(100, 50)],
+        processors=[ResizeToFit(767)],
         format='JPEG',
-        options={'quality': 60}
-        )
+        options={'quality': 85}
+    )
 
     # Date
     opening_date = models.DateTimeField(auto_now_add=True)
@@ -61,12 +62,12 @@ class Event(models.Model):
         return f'{self.title}'
 
     def get_photos(self):
-        photos = self.photo_set.all()
+        photos = self.eventphoto_set.all()
         return photos
 
+    @property
     def participants_counter(self):
-        participants = self.participants
-        self.participants_count = participants
+        return self.participants.count
 
     def save(self, *args, **kwargs):
         super(Event, self).save(*args, **kwargs)
@@ -87,11 +88,15 @@ class EventComment(models.Model):
         ordering = ['created_at']
 
 
-class Photo(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+class EventPhoto(models.Model):
+    events = models.ForeignKey(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
+    image_thumbnail = ImageSpecField(source='image',
+                                     processors=[ResizeToFit(767)],
+                                     format='JPEG',
+                                     options={'quality': 85}
+                                     )
 
     def save(self, *args, **kwargs):
-        super(Photo, self).save(*args, **kwargs)
-
+        super(EventPhoto, self).save(*args, **kwargs)

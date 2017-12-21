@@ -1,12 +1,16 @@
 from rest_framework import serializers
 
 from member.serializer import UserSerializer
-from .models import Event, Photo
+from .models import Event, EventPhoto
 
 
 class EventSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
+    event_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    closing_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    opening_date = serializers.DateTimeField(format='%Y-%m-%d')
     wish_status = serializers.SerializerMethodField()
+    participants_counter = serializers.SerializerMethodField('_participants_counter')
 
     class Meta:
         model = Event
@@ -18,13 +22,29 @@ class EventSerializer(serializers.ModelSerializer):
             return True
         return False
 
+    def _participants_counter(self, obj):
+        return obj.participants_counter()
 
-class PhotoSerializer(serializers.ModelSerializer):
-    pk = serializers.ReadOnlyField()
-    event = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+
+class EventParticipateSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Photo
+        model = Event
         fields = (
-            '__all__'
+            'id',
+            'author',
+            'title',
+            'participants'
+        )
+
+
+class EventPhotoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EventPhoto
+        fields = (
+            'id',
+            'events',
+            'image',
+            'created_at',
         )
