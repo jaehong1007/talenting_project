@@ -1,14 +1,17 @@
-from datetime import datetime
+import mock
+from django.core.files import File
+
+file_mock = mock.MagicMock(spec=File, name='FileMock')
 
 import pytz
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 
-from hosting.models.hosting import Hosting, HostingPhoto
+from hosting.models.hosting import Hosting
 
 User = get_user_model()
 seoul_tz = pytz.timezone("Asia/Seoul")
-image_path = 'https://ko.wikipedia.org/wiki/%ED%95%9C%EC%98%A5#/media/File:Korea-Gangneung-Ojukheon-01.jpg'
+image_path = '/home/sejun/Desktop/test_image.jpg'
 
 
 class Command(BaseCommand):

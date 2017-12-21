@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -98,6 +99,7 @@ class EventDetail(APIView):
         event = self.get_object(pk=kwargs['event_pk'])
         event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # class EventList(generics.ListCreateAPIView):
 #     queryset = Event.objects.all()
@@ -222,7 +224,6 @@ class EventPhotoDetail(APIView):
         photo = self.get_object(pk=kwargs['photo_pk'])
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()

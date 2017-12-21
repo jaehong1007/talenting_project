@@ -1,15 +1,18 @@
 from datetime import datetime
 
+import mock
 import pytz
 from django.contrib.auth import get_user_model
+from django.core.files import File
 from django.core.management import BaseCommand
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 from member.models import Profile, ProfileImage
 
+file_mock = mock.MagicMock(spec=File, name='FileMock')
+
 User = get_user_model()
 seoul_tz = pytz.timezone("Asia/Seoul")
-image_path = 'https://en.wikipedia.org/wiki/Satomi_Ishihara#/media/File:Godzilla_Resurgence_World_Premiere_Red_Carpet-_Ishihara_Satomi.jpg'
+image_path = '/home/sejun/Desktop/isihara.jpg'
 
 
 class Command(BaseCommand):
@@ -40,10 +43,6 @@ class Command(BaseCommand):
                 occupation='student',
                 available_languages=('{ko, en}')
             )
-            ProfileImage.objects.create(
-                profile=guest_profile,
-                image=image_path
-            )
 
         for i in range(1, 31):
             host = User.objects.create_user(email=f'host{i}@gmail.com',
@@ -65,8 +64,4 @@ class Command(BaseCommand):
                 city='seoul',
                 occupation='student',
                 available_languages=('{ko, en}')
-            )
-            ProfileImage.objects.create(
-                profile=host_profile,
-                image=image_path
             )

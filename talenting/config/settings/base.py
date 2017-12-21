@@ -87,7 +87,9 @@ REST_FRAMEWORK = {
 
 # FCM_DJANGO
 FCM_DJANGO_SETTINGS = {
-    "FCM_SERVER_KEY": "AIzaSyACNPFjv3ehXYrz_YAetDUassGsaptv9E4",
+    "FCM_SERVER_KEY": "AAAAvSzoz_E:APA91bGs-dg0EGHPsYrvlRIfCW"
+                      "adGTNtMOQ56JzcmnZqr6Rs5koeZfZYEAKu_FF8zshSH_CNmpgHseGQIuAiw9j_"
+                      "GhLHF7_27RRJOm6nPgGuxnT7tiCJwksVRbDU9OAtKis2VHJXPNkb",
     # true if you want to have only one active device per registered user at a time
     # default: False
     "ONE_DEVICE_PER_USER": False,

@@ -122,4 +122,3 @@ class EventPhoto(models.Model):
 
     def save(self, *args, **kwargs):
         super(EventPhoto, self).save(*args, **kwargs)
-

@@ -32,10 +32,17 @@ class HostingList(APIView):
 
     def get_queryset(self):
         queryset = Hosting.objects.all()
+        # if each parameter does not exist in request, it assigns None.
         search_query = self.request.query_params.get('search_query', None)
+        search_categories = self.request.query_params.get('search_categories', None)
+
         if search_query is not None:
-            queryset = queryset.filter(
+            queryset = Hosting.objects.filter(
                 Q(address__icontains=search_query)
+            )
+        if search_categories is not None:
+            queryset = queryset.filter(
+                Q(category__exact=search_categories)
             )
         return queryset
 
@@ -46,7 +53,7 @@ class HostingList(APIView):
             many=True,
             context={'user_pk': request.user.pk}  # Send user.pk to get wish status.
         )
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -58,7 +65,7 @@ class HostingList(APIView):
         serializer = HostingSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(owner=request.user)
-            # This is hard coding for API structure for Android.
+            # API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 201,
@@ -86,9 +93,8 @@ class HostingDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
-        # 세준 임시 추가
         serializer = HostingSerializer(hosting, context={'user_pk': request.user.pk})
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting': serializer.data,
             'code': 200,
@@ -101,7 +107,7 @@ class HostingDetail(APIView):
         serializer = HostingSerializer(hosting, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            # This is hard coding for API structure for Android.
+            # API structure for Android.
             data = {
                 'hosting': serializer.data,
                 'code': 200,
@@ -131,7 +137,7 @@ class PhotoList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         photos = hosting.hostingphoto_set.all()
         serializer = HostingPhotoSerializer(photos, many=True)
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting_photo': serializer.data,
             'code': 200,
@@ -144,7 +150,7 @@ class PhotoList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         if serializer.is_valid(raise_exception=True):
             serializer.save(place=hosting)
-            # This is hard coding for API structure for Android.
+            # API structure for Android.
             data = {
                 'hosting_photo': serializer.data,
                 'code': 201,
@@ -173,7 +179,7 @@ class PhotoDetail(APIView):
     def get(self, request, *args, **kwargs):
         photo = self.get_object(pk=kwargs['photo_pk'])
         serializer = HostingPhotoSerializer(photo)
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting_photo': serializer.data,
             'code': 200,
@@ -186,7 +192,7 @@ class PhotoDetail(APIView):
         serializer = HostingPhotoSerializer(photo, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            # This is hard coding for API structure for Android.
+            # API structure for Android.
             data = {
                 'hosting_photo': serializer.data,
                 'code': 200,
@@ -216,7 +222,7 @@ class HostingReviewList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         reviews = hosting.hostingreview_set.all()
         serializer = HostingReviewSerializer(reviews, many=True)
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting_review': serializer.data,
             'code': 200,
@@ -235,7 +241,7 @@ class HostingReviewList(APIView):
                     host=host,
                     place=hosting,
                 )
-                # This is hard coding for API structure for Android.
+                # API structure for Android.
                 data = {
                     'hosting_review': serializer.data,
                     'code': 200,
@@ -265,7 +271,7 @@ class HostingReviewDetail(APIView):
     def get(self, request, *args, **kwargs):
         review = self.get_object(pk=kwargs['review_pk'])
         serializer = HostingReviewSerializer(review)
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting_review': serializer.data,
             'code': 200,
@@ -279,7 +285,7 @@ class HostingReviewDetail(APIView):
             serializer = HostingReviewSerializer(review, data=request.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                # This is hard coding for API structure for Android.
+                # API structure for Android.
                 data = {
                     'hosting_review': serializer.data,
                     'code': 200,
@@ -331,7 +337,7 @@ class HostingRequestList(APIView):
         hosting = get_object_or_404(Hosting, pk=kwargs['hosting_pk'])
         hosting_request = get_object_or_404(HostingRequest, user=request.user, place=hosting)
         serializer = HostingRequestSerializer(hosting_request)
-        # This is hard coding for API structure for Android.
+        # API structure for Android.
         data = {
             'hosting_request': serializer.data,
             'code': 200,

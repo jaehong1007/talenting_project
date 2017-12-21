@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 # from django.utils.encoding import force_bytes
 # from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status, generics
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.exceptions import APIException
@@ -22,7 +23,8 @@ from member.models import Profile, ProfileImage, GuestReview, MyTrip
 from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetrieveUpdateAPIView, MyListCreateAPIView, \
     MyListAPIView
 from utils.exception.api_exception import LogInException
-from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner
+from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner, \
+    IsProfileImageUserOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
     MyEventSerializer, MyTripSerializer
@@ -208,7 +210,7 @@ class ProfileImageRetrieveUpdateDelete(MyRetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
-    permission_classes = (IsProfileUserOrReadOnly,)
+    permission_classes = (IsProfileImageUserOrReadOnly,)
 
 
 class GuestReviewListCreate(MyListCreateAPIView):
@@ -315,7 +317,7 @@ class WishListProfileToggle(generics.GenericAPIView):
         user = request.user
         data = {
             'user': user.pk,
-            'hosting': instance.pk
+            'profile': instance.pk
         }
         if not user.wish_profile.filter(pk=instance.pk).exists():
             user.wish_profile.add(instance)
@@ -332,7 +334,7 @@ class WishListProfileToggle(generics.GenericAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class MyTripRetrieveUpdateDeleteView(MyRetrieveUpdateDestroyAPIView):
+class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -351,12 +353,47 @@ class MyTripRetrieveUpdateDeleteView(MyRetrieveUpdateDestroyAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class MyTripListCreateView(MyListCreateAPIView):
+class MyTripListCreateView(generics.ListCreateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
     permission_classes = (IsAuthorOrReadOnly,)
 
-    queryset = MyTrip.objects.all()
     serializer_class = MyTripSerializer
+
+    def get_queryset(self):
+        queryset = MyTrip.objects.all()
+        # if each parameter does not exist in request, it assigns None.
+        search_query = self.request.query_params.get('search_query', None)
+
+        if search_query is not None:
+            queryset = MyTrip.objects.filter(
+                Q(destination__icontains=search_query)
+            )
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = {
+            'my_trip': serializer.data,
+            'code': 200,
+            'msg': ''
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class MyTripCreatedList(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        mytrips = MyTrip.objects.filter(user=self.request.user)
+        serializer = MyTripSerializer(mytrips, many=True)
+        data = {
+            'my_trip': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
