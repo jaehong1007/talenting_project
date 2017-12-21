@@ -12,7 +12,7 @@ class IsProfileUserOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return str(obj.profile.user.pk) == str(request.user.pk) and request.user.is_authenticated
+        return str(obj.user.pk) == str(request.user.pk) and request.user.is_authenticated
 
 
 class IsProfileImageUserOrReadOnly(permissions.BasePermission):
@@ -50,3 +50,7 @@ class IsProfileOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user == obj:
             return True
+
+class IsUserInChatMember(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user in (obj.start_user, obj.target_user)

@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from fcm.models import Chat
 from fcm.serializer import MessageSerializer, ChatListSerializer
+from utils.permissions import IsUserInChatMember
 
 User = get_user_model()
 
@@ -45,9 +46,15 @@ class SendMessage(APIView):
 
 class ChatRecord(APIView):
     authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsUserInChatMember,)
+
+    def get_object(self, pk):
+        obj = get_object_or_404(Chat, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request, *args, **kwargs):
-        chat = get_object_or_404(Chat, pk=kwargs['chat_pk'])
+        chat = self.get_object(pk=kwargs['chat_pk'])
         messages = chat.messages.all()
         serializer = MessageSerializer(messages, many=True)
         data = {
