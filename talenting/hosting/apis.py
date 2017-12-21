@@ -80,7 +80,6 @@ class HostingDetail(APIView):
 
     def get(self, request, *args, **kwargs):
         hosting = self.get_object(pk=kwargs['hosting_pk'])
-        # 세준 임시 추가
         serializer = HostingSerializer(hosting, context={'user_pk': request.user.pk})
         # This is hard coding for API structure for Android.
         data = {

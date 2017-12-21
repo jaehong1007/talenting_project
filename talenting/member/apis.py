@@ -314,7 +314,7 @@ class WishListProfileToggle(generics.GenericAPIView):
         user = request.user
         data = {
             'user': user.pk,
-            'hosting': instance.pk
+            'profile': instance.pk
         }
         if not user.wish_profile.filter(pk=instance.pk).exists():
             user.wish_profile.add(instance)

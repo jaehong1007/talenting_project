@@ -1,7 +1,8 @@
 from django.conf.urls import url
 
 from ..apis import SignUp, LogIn, EmailIsUnique, ProfileRetrieveUpdate, ProfileImageCreate, \
-    ProfileImageRetrieveUpdateDelete, GuestReviewListCreate, WishListRetrieve, HostingWishListDelete, EventWishListDelete, \
+    ProfileImageRetrieveUpdateDelete, GuestReviewListCreate, WishListRetrieve, HostingWishListDelete, \
+    EventWishListDelete, \
     PasswordMissing, PasswordReset, EventParticipateList, ProfileWishListDelete, WishListProfileToggle, \
     MyTripListCreateView, MyTripRetrieveUpdateDeleteView, SignOut
 

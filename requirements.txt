@@ -24,6 +24,7 @@ docker-py==1.7.2
 dockerpty==0.4.1
 docopt==0.6.2
 docutils==0.14
+fcm-django==0.2.13
 future==0.16.0
 geopy==1.11.0
 idna==2.6
@@ -33,10 +34,11 @@ jedi==0.11.0
 jet==1.0
 jmespath==0.9.3
 kombu==4.1.0
-model-mommy==1.4.0
+mock==2.0.0
 olefile==0.44
 parso==0.1.0
 pathspec==0.5.0
+pbr==3.1.1
 pexpect==4.2.1
 pickleshare==0.7.4
 pilkit==2.0
@@ -44,12 +46,14 @@ Pillow==4.3.0
 prompt-toolkit==1.0.15
 psycopg2==2.7.3.1
 ptyprocess==0.5.2
+pyfcm==1.4.3
 Pygments==2.2.0
 python-dateutil==2.6.1
 pytz==2017.2
 PyYAML==3.12
 raven==6.3.0
 requests==2.9.1
+requests-toolbelt==0.8.0
 s3transfer==0.1.11
 semantic-version==2.5.0
 Serializer==0.2.1
