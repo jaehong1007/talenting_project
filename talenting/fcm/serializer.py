@@ -11,6 +11,10 @@ from member.serializer import UserSerializer
 User = get_user_model()
 
 
+class FcmDeviceInfoSerializer(serializers.Serializer):
+    registration_id = serializers.CharField()
+
+
 class FCMDeviceSerializer(serializers.ModelSerializer, UniqueRegistrationSerializerMixin):
     active = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
@@ -60,8 +64,8 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ('from_user', 'body', 'sent_by', 'created_at',)
-        read_only_fields = ('sent_by', 'created_at')
+        fields = ('from_user', 'body', 'created_at',)
+        read_only_fields = ('created_at',)
 
 
 class ChatListSerializer(serializers.ModelSerializer):
