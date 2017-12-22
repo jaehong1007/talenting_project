@@ -26,6 +26,7 @@ class EventList(APIView):
     permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
+        queryset = Event.objects.all()
         search_query = self.request.query_params.get('search_query', None)
         search_categories = self.request.query_params.get('search_categories', None)
 
@@ -224,6 +225,7 @@ class EventPhotoDetail(APIView):
         photo = self.get_object(pk=kwargs['photo_pk'])
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class WishListEventToggle(generics.GenericAPIView):
     queryset = Event.objects.all()

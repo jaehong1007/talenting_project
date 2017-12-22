@@ -75,8 +75,7 @@ class Event(models.Model):
     def get_primary_photo(self):
         photos = self.get_photos()
         if photos:
-            self.primary_photo = photos[0].event_thumbnail
-            self.has_photo = True
+            self.primary_photo = photos[0].image_thumbnail
             self.save()
 
     @property
@@ -112,9 +111,9 @@ class EventPhoto(models.Model):
         null=True
     )
     events = models.ForeignKey(Event, on_delete=models.CASCADE)
-    event_image = models.ImageField(upload_to='event', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    image_thumbnail = ImageSpecField(source='event_image',
+    image = models.ImageField(upload_to='event')
+    image_thumbnail = ImageSpecField(source='image',
                                      processors=[ResizeToFit(767)],
                                      format='JPEG',
                                      options={'quality': 85}
@@ -122,3 +121,5 @@ class EventPhoto(models.Model):
 
     def save(self, *args, **kwargs):
         super(EventPhoto, self).save(*args, **kwargs)
+        if self.events:
+            self.events.get_primary_photo()

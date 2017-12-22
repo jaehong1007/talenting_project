@@ -40,6 +40,7 @@ class EventParticipateSerializer(serializers.ModelSerializer):
 
 class EventPhotoSerializer(serializers.ModelSerializer):
     image_thumbnail = serializers.ImageField(read_only=True)
+    events = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = EventPhoto
@@ -48,10 +49,12 @@ class EventPhotoSerializer(serializers.ModelSerializer):
             'events',
             'image',
             'created_at',
+            'image_thumbnail'
         )
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    events = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = EventComment
