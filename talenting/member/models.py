@@ -56,6 +56,7 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # wish list
+
     wish_hosting = models.ManyToManyField('hosting.Hosting', related_name='wish_hosting', blank=True)
     wish_event = models.ManyToManyField('event.Event', related_name='wish_event', blank=True)
     wish_profile = models.ManyToManyField('Profile', symmetrical=False, related_name='wish_profile', blank=True)
