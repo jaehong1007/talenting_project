@@ -2,7 +2,7 @@ FROM        yabi1007/base
 MAINTAINER  jaehong1007@gmail.com
 
 ENV         LANG C.UTF-8
-ENV         DJANGO_SETTINGS_MODULE config.settings
+ENV         DJANGO_SETTINGS_MODULE config.settings.dev
 
 # 파일 복사 및 requirements 설치
 COPY        . /srv/app
@@ -26,10 +26,10 @@ RUN         mkdir -p /var/log/uwsgi/app
 
 # manage.py
 WORKDIR     /srv/app/talenting
-# RUN         /root/.pyenv/versions/app/bin/python manage.py collectstatic --noinput
+RUN         /root/.pyenv/versions/app/bin/python manage.py collectstatic --noinput
 RUN         /root/.pyenv/versions/app/bin/python manage.py migrate --noinput
 
-# supervisor
+# supervisorsud
 RUN         cp /srv/app/.config/dev/supervisor/* \
                 /etc/supervisor/conf.d
 

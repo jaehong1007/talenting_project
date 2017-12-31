@@ -1,3 +1,4 @@
+
 from .base import *
 
 ALLOWED_HOSTS = [
@@ -6,9 +7,8 @@ ALLOWED_HOSTS = [
     '.elasticbeanstalk.com',
     '.yabi.kr',
 ]
-CONFIG_SECRET_COMMON_FILE = os.path.join(CONFIG_SECRET_DIR, 'database.json')
-database = json.loads(open(CONFIG_SECRET_COMMON_FILE).read())
 
-DATABASES = database['databases']
+config_secret_local = json.loads(open(CONFIG_SECRET_LOCAL_FILE).read())
 
-SECRET_KEY = config_secret_common['django']['secret_key']
+DATABASES = config_secret_local['django']['databases']
+

@@ -1,13 +1,13 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.views.generic import TemplateView
 
-from django.contrib.auth import get_user_model
-
 User = get_user_model()
+
 
 class UserActivateView(TemplateView):
     logger = logging.getLogger(__name__)
@@ -32,4 +32,4 @@ class UserActivateView(TemplateView):
             user.save()
             self.logger.info('User %s(pk=%s) has been activated.' % (user, user.pk))
 
-        return super(UserActivateView, self).get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)

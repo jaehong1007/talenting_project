@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io/api/macos,python,django,pycharm
-
+.media/
 
 ### Django ###
 *.log
@@ -207,6 +207,7 @@ venv.bak/
 #Custom
 .idea/
 .config_secret/
+.media/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
@@ -215,3 +216,4 @@ venv.bak/
 
 # Front Code
 /front/
+

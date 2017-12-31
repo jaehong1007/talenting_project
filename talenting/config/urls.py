@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from hosting.apis import HostingList
 from member.apis import SignUp
 from member.views import UserActivateView
 
@@ -27,4 +28,5 @@ urlpatterns = [
         UserActivateView.as_view(),
         name='activate'
     ),
+    url(r'^hosting/$', HostingList.as_view(), name='hosting-list'),
 ]
