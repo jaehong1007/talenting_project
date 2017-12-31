@@ -3,6 +3,7 @@ from django.db.models import Q
 from fcm_django.models import FCMDevice
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +13,22 @@ from fcm.serializer import MessageSerializer, ChatListSerializer, FcmDeviceInfoS
 from utils.permissions import IsUserInChatMember
 
 User = get_user_model()
+
+
+class DeviceDelete(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def delete(self, request, *args, **kwargs):
+        device = FCMDevice.objects.filter(user=request.user).filter(registration_id=request.data['registration_id'])
+        if device:
+            device.delete()
+        else:
+            raise APIException('registration_id not exists')
+        data = {
+            'msg': 'registration_id deleted',
+            'code': status.HTTP_204_NO_CONTENT
+        }
+        return Response(data=data, status=status.HTTP_204_NO_CONTENT)
 
 
 class DeviceInfo(APIView):
@@ -33,13 +50,11 @@ class SendMessage(APIView):
 
     def post(self, request, *args, **kwargs):
         to_user = get_object_or_404(User, pk=request.data['to_user'])
-        chat_created = False
         filtered_chat = Chat.objects.filter(Q(start_user=request.user) | Q(target_user=request.user))
         chat = filtered_chat.filter(Q(start_user=to_user) | Q(target_user=to_user))
 
         if not chat:
             chat = Chat.start(request.user, to_user)
-            chat_created = True
         else:
             chat = chat[0]
             if chat.start_user == request.user:
@@ -52,7 +67,7 @@ class SendMessage(APIView):
                                        context={'chat': chat, 'from_user': request.user})
         if serializer.is_valid(raise_exception=True):
             devices.send_message(title='Talenting',
-                                 body=f"{chat_created}/{serializer.validated_data['body']}")
+                                 body=f"{chat.pk}/{serializer.validated_data['body']}")
             serializer.save()
             data = {
                 'sent_message': serializer.data,
