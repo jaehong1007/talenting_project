@@ -3,7 +3,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import pytz
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
-
+import mock
+from django.core.files import File
+file_mock = mock.MagicMock(spec=File, name='FileMock')
+import tempfile
 from event.models import Event
 
 User = get_user_model()
@@ -25,7 +28,7 @@ class Command(BaseCommand):
                 country='KR',
                 state='idw',
                 city='seoul',
-                primary_photo=image_path,
+                primary_photo=tempfile.NamedTemporaryFile(suffix=".jpg").name,
                 closing_date=seoul_tz.localize(datetime(2017, 12, 17, 17, 00)),
                 event_date=seoul_tz.localize(datetime(2017, 12, 14, 17, 00)),
                 maximum_participant=10,

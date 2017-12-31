@@ -20,17 +20,17 @@ class Event(models.Model):
     title = models.CharField(max_length=20)
     program = models.TextField(max_length=300, blank=True)
     noted_item = models.TextField(max_length=100, blank=True, null=True)
-    country = models.CharField(_('Country'), max_length=2, choices=COUNTRIES)
-    state = models.CharField(_('State/Region'), max_length=40, null=True, blank=True)
-    city = models.CharField(_('City'), max_length=40)
+
+    # Location
+    country = models.CharField(max_length=2, choices=COUNTRIES, blank=True)
+    city = models.CharField(max_length=10, blank=True)
+    distinct = models.CharField(max_length=40, blank=True)
+    street = models.CharField(max_length=60, blank=True)
+    address = models.CharField(max_length=100)
+    postcode = models.CharField(max_length=10, blank=True)
+
+    # etc
     price = models.DecimalField(_('Price per person'), decimal_places=2, max_digits=6, blank=True, null=True)
-    primary_photo = models.ImageField(upload_to='event', max_length=255)
-    primary_photo_thumbnail = ImageSpecField(
-        source='primary_photo',
-        processors=[ResizeToFit(767)],
-        format='JPEG',
-        options={'quality': 85}
-    )
 
     # Date
     opening_date = models.DateTimeField(auto_now_add=True)
@@ -53,6 +53,9 @@ class Event(models.Model):
     lat = models.FloatField(default=0.0)
     lon = models.FloatField(default=0.0)
 
+    # Primary Photo
+    primary_photo = models.ImageField(blank=True)
+
     objects = EventManager()
 
     class Meta:
@@ -64,6 +67,16 @@ class Event(models.Model):
     def get_photos(self):
         photos = self.eventphoto_set.all()
         return photos
+
+    def get_comments(self):
+        comments = self.eventcomment_set.all()
+        return comments
+
+    def get_primary_photo(self):
+        photos = self.get_photos()
+        if photos:
+            self.primary_photo = photos[0].image_thumbnail
+            self.save()
 
     @property
     def participants_counter(self):
@@ -80,18 +93,26 @@ class EventComment(models.Model):
         null=True,
         blank=True
     )
-    event = models.ForeignKey(Event, related_name='comments')
+    events = models.ForeignKey(Event, on_delete=models.CASCADE)
     content = models.TextField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['created_at']
 
+    def save(self, *args, **kwargs):
+        super(EventComment, self).save(*args, **kwargs)
+
 
 class EventPhoto(models.Model):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
     events = models.ForeignKey(Event, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='event')
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='event')
     image_thumbnail = ImageSpecField(source='image',
                                      processors=[ResizeToFit(767)],
                                      format='JPEG',
@@ -100,3 +121,5 @@ class EventPhoto(models.Model):
 
     def save(self, *args, **kwargs):
         super(EventPhoto, self).save(*args, **kwargs)
+        if self.events:
+            self.events.get_primary_photo()

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import GuestReview, User, Profile
+from .models import GuestReview, User, Profile, ProfileImage, MyTrip
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -19,3 +19,5 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(GuestReview, GuestReviewAdmin)
 admin.site.register(Profile, ProfileAdmin)
+admin.site.register(ProfileImage)
+admin.site.register(MyTrip)

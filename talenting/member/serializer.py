@@ -134,6 +134,8 @@ class WishHostingSerializer(serializers.ModelSerializer):
 
 
 class WishEventSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+
     class Meta:
         model = Event
         fields = ('pk', 'author', 'title', 'primary_photo')
