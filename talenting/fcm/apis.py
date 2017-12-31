@@ -3,13 +3,13 @@ from django.db.models import Q
 from fcm_django.models import FCMDevice
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fcm.models import Chat
 from fcm.serializer import MessageSerializer, ChatListSerializer, FcmDeviceInfoSerializer
+from utils.exception.api_exception import RegistrationIdNotExistException
 from utils.permissions import IsUserInChatMember
 
 User = get_user_model()
@@ -23,7 +23,7 @@ class DeviceDelete(APIView):
         if device:
             device.delete()
         else:
-            raise APIException('registration_id not exists')
+            raise RegistrationIdNotExistException('registration_id not exists')
         data = {
             'msg': 'registration_id deleted',
             'code': status.HTTP_204_NO_CONTENT
