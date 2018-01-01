@@ -3,16 +3,16 @@ from datetime import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import SET
-from django.db.models.signals import post_save, post_delete, pre_save, pre_delete
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
 from config import settings
-from utils.deletion import get_sentinel_user
-from ..options import *
+from .. import options
+from .. import countries
+from utils import deletion
 
 User = get_user_model()
 
@@ -45,24 +45,24 @@ class Hosting(models.Model):
 
     # Representation
     owner = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    category = models.SmallIntegerField(choices=CATEGORIES, default=1)
+    category = models.SmallIntegerField(choices=options.CATEGORIES, default=1)
     title = models.CharField(max_length=50)
     summary = models.TextField(max_length=500)
     primary_photo = models.ImageField(blank=True)
     recommend_counter = models.IntegerField(blank=True, null=True)
 
     # House
-    house_type = models.SmallIntegerField(choices=HOUSE_TYPES, default=1)
-    room_type = models.SmallIntegerField(choices=ROOM_TYPES, default=1)
-    meal_type = models.SmallIntegerField(choices=MEAL_TYPES, default=1)
-    capacity = models.SmallIntegerField(choices=CAPACITIES, default=1)
-    internet = models.SmallIntegerField(choices=INTERNET_TYPES, default=1)
+    house_type = models.SmallIntegerField(choices=options.HOUSE_TYPES, default=1)
+    room_type = models.SmallIntegerField(choices=options.ROOM_TYPES, default=1)
+    meal_type = models.SmallIntegerField(choices=options.MEAL_TYPES, default=1)
+    capacity = models.SmallIntegerField(choices=options.CAPACITIES, default=1)
+    internet = models.SmallIntegerField(choices=options.INTERNET_TYPES, default=1)
     smoking = models.NullBooleanField()
     pet = models.NullBooleanField()
     rules = models.TextField(blank=True)
-    language = ArrayField(models.CharField(max_length=5, choices=LANGUAGES))
-    min_stay = models.SmallIntegerField(choices=MIN_STAY, default=1)
-    max_stay = models.SmallIntegerField(choices=MAX_STAY, default=1)
+    language = ArrayField(models.CharField(max_length=5, choices=countries.LANGUAGES))
+    min_stay = models.SmallIntegerField(choices=options.MIN_STAY, default=1)
+    max_stay = models.SmallIntegerField(choices=options.MAX_STAY, default=1)
 
     # Description
     description = models.TextField(blank=True)
@@ -72,7 +72,7 @@ class Hosting(models.Model):
     transportation = models.TextField(blank=True)
 
     # Address
-    country = models.CharField(max_length=2, choices=COUNTRIES, blank=True)
+    country = models.CharField(max_length=2, choices=countries.COUNTRIES, blank=True)
     city = models.CharField(max_length=10, blank=True)
     distinct = models.CharField(max_length=40, blank=True)
     street = models.CharField(max_length=60, blank=True)
@@ -89,7 +89,7 @@ class Hosting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def get_photos(self):
+    def get_hosting_photos(self):
         return self.hostingphoto_set.all()  # return HostingPhoto queryset
 
     def get_hosting_reviews(self):
@@ -100,9 +100,9 @@ class Hosting(models.Model):
         Take queryset from HostingPhoto,
         and assign the first hosting_thumbnail in the queryset to primary_photo.
         """
-        photos = self.get_photos()
+        photos = self.get_hosting_photos()
         if photos:
-            self.primary_photo = photos[0].hosting_thumbnail
+            self.primary_photo = photos[0].hosting_thumbnail.open()
             self.has_photo = True
             self.save()
 
@@ -129,14 +129,13 @@ class Hosting(models.Model):
             instance.owner.is_host = True
         else:
             instance.owner.is_host = False
-        print(instance.owner.is_host)
         instance.owner.save()
 
     def __str__(self):
-        return f'{self.owner.get_full_name()}'
+        return f'{self.owner.get_short_name()}'
 
     class Meta:
-        ordering = ['-has_photo', '-recommend_counter']
+        ordering = ['has_photo', '-recommend_counter']
 
     object = HostingManager()
 
@@ -150,7 +149,7 @@ class HostingPhoto(models.Model):
                                        format='JPEG',
                                        options={'quality': 85})
     caption = models.CharField(max_length=50, blank=True)
-    type = models.SmallIntegerField(choices=PHOTO_TYPES, default=1)
+    type = models.SmallIntegerField(choices=options.PHOTO_TYPES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -182,7 +181,7 @@ class HostingReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Author: {self.author.first_name}'
+        return f'{self.author.first_name}'
 
     def is_editable(self):
         """
@@ -207,11 +206,11 @@ class HostingRequest(models.Model):
     # When user delete account, assign sentinel user.
     user = models.ForeignKey(User,
                              null=True,
-                             on_delete=models.SET(get_sentinel_user),
+                             on_delete=models.SET(deletion.get_sentinel_user),
                              related_name='sender')
     host = models.ForeignKey(User,
                              null=True,
-                             on_delete=models.SET(get_sentinel_user),
+                             on_delete=models.SET(deletion.get_sentinel_user),
                              related_name='receiver')
     place = models.ForeignKey(Hosting)
     arrival_date = models.DateField()
@@ -223,10 +222,14 @@ class HostingRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Request: {self.place}'
+        return f'{self.user.get_short_name()}'
 
     @receiver([post_delete], sender=User)
     def ensure_request_status(sender, instance, **kwargs):
+        """
+        When a user who have sent a request to stay delete account,
+        automatically that request become unaccepted and canceled.
+        """
         instance.accepted = False
         instance.canceled = True
         instance.save()

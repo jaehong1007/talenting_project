@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from fcm_django.models import FCMDevice
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import get_object_or_404
@@ -7,10 +8,41 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from fcm.models import Chat
-from fcm.serializer import MessageSerializer, ChatListSerializer
+from fcm.serializer import MessageSerializer, ChatListSerializer, FcmDeviceInfoSerializer
+from utils.exception.api_exception import RegistrationIdNotExistException
 from utils.permissions import IsUserInChatMember
 
 User = get_user_model()
+
+
+class DeviceDelete(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def delete(self, request, *args, **kwargs):
+        device = FCMDevice.objects.filter(user=request.user).filter(registration_id=request.data['registration_id'])
+        if device:
+            device.delete()
+        else:
+            raise RegistrationIdNotExistException('registration_id not exists')
+        data = {
+            'msg': 'registration_id deleted',
+            'code': status.HTTP_204_NO_CONTENT
+        }
+        return Response(data=data, status=status.HTTP_204_NO_CONTENT)
+
+
+class DeviceInfo(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request, *args, **kwargs):
+        device = get_object_or_404(FCMDevice, user=request.user)
+        serializer = FcmDeviceInfoSerializer(device)
+        data = {
+            'registration_id': serializer.data,
+            'msg': '',
+            'code': status.HTTP_200_OK
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class SendMessage(APIView):
@@ -30,11 +62,12 @@ class SendMessage(APIView):
             else:
                 to_user = chat.start_user
         devices = to_user.fcmdevice_set.all()
+
         serializer = MessageSerializer(data=request.data,
                                        context={'chat': chat, 'from_user': request.user})
         if serializer.is_valid(raise_exception=True):
             devices.send_message(title='Talenting',
-                                 body=serializer.validated_data['body'])
+                                 body=f"{chat.pk}/{serializer.validated_data['body']}")
             serializer.save()
             data = {
                 'sent_message': serializer.data,
