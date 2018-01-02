@@ -24,7 +24,7 @@ from utils.api import MyRetrieveUpdateDestroyAPIView, MyCreateAPIView, MyRetriev
     MyListAPIView
 from utils.exception.api_exception import LogInException
 from utils.permissions import IsAuthorOrReadOnly, IsProfileUserOrReadOnly, IsPlaceOwnerOrReadOnly, IsProfileOwner, \
-    IsProfileImageUserOrReadOnly
+    IsProfileImageUserOrReadOnly, IsUserOrReadOnly
 from .serializer import SignUpSerializer, LogInSerializer, ProfileManageSerializer, ProfileImageSerializer, \
     ProfileSerializer, GuestReviewSerializer, WishHostingSerializer, WishEventSerializer, PasswordResetSerializer, \
     MyEventSerializer, MyTripSerializer
@@ -336,7 +336,7 @@ class WishListProfileToggle(generics.GenericAPIView):
 
 class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsUserOrReadOnly,)
 
     queryset = MyTrip.objects.all()
     serializer_class = MyTripSerializer
@@ -355,7 +355,7 @@ class MyTripRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
 class MyTripListCreateView(generics.ListCreateAPIView):
     authentication_classes = (BasicAuthentication, TokenAuthentication,)
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsUserOrReadOnly,)
 
     serializer_class = MyTripSerializer
 

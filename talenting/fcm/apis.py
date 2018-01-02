@@ -9,9 +9,26 @@ from rest_framework.views import APIView
 
 from fcm.models import Chat
 from fcm.serializer import MessageSerializer, ChatListSerializer, FcmDeviceInfoSerializer
+from utils.exception.api_exception import RegistrationIdNotExistException
 from utils.permissions import IsUserInChatMember
 
 User = get_user_model()
+
+
+class DeviceDelete(APIView):
+    authentication_classes = (TokenAuthentication,)
+
+    def delete(self, request, *args, **kwargs):
+        device = FCMDevice.objects.filter(user=request.user).filter(registration_id=request.data['registration_id'])
+        if device:
+            device.delete()
+        else:
+            raise RegistrationIdNotExistException('registration_id not exists')
+        data = {
+            'msg': 'registration_id deleted',
+            'code': status.HTTP_204_NO_CONTENT
+        }
+        return Response(data=data, status=status.HTTP_204_NO_CONTENT)
 
 
 class DeviceInfo(APIView):
@@ -33,13 +50,11 @@ class SendMessage(APIView):
 
     def post(self, request, *args, **kwargs):
         to_user = get_object_or_404(User, pk=request.data['to_user'])
-        chat_created = False
         filtered_chat = Chat.objects.filter(Q(start_user=request.user) | Q(target_user=request.user))
         chat = filtered_chat.filter(Q(start_user=to_user) | Q(target_user=to_user))
 
         if not chat:
             chat = Chat.start(request.user, to_user)
-            chat_created = True
         else:
             chat = chat[0]
             if chat.start_user == request.user:
@@ -52,7 +67,7 @@ class SendMessage(APIView):
                                        context={'chat': chat, 'from_user': request.user})
         if serializer.is_valid(raise_exception=True):
             devices.send_message(title='Talenting',
-                                 body=f"{chat_created}/{serializer.validated_data['body']}")
+                                 body=f"{chat.pk}/{serializer.validated_data['body']}")
             serializer.save()
             data = {
                 'sent_message': serializer.data,
