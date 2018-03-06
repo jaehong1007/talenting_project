@@ -1,6 +1,3 @@
-from .countries import *
-
-
 def n_tuple(n, first=[], last=[]):
     return tuple(first + [(i, i) for i in range(1, n)] + last)
 

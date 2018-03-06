@@ -397,3 +397,19 @@ class MyTripCreatedList(APIView):
             'msg': '',
         }
         return Response(data, status=status.HTTP_200_OK)
+
+
+class MyTripCreatedListBy(APIView):
+    authentication_classes = (BasicAuthentication, TokenAuthentication,)
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        mytrips = MyTrip.objects.filter(user=user)
+        serializer = MyTripSerializer(mytrips, many=True)
+        data = {
+            'my_trip': serializer.data,
+            'code': 200,
+            'msg': '',
+        }
+        return Response(data, status=status.HTTP_200_OK)
