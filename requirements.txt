@@ -29,7 +29,7 @@ fcm-django==0.2.13
 future==0.16.0
 geopy==1.11.0
 idna==2.6
-ipython==6.2.1
+ipython==7.16.3
 ipython-genutils==0.2.0
 jedi==0.11.0
 jet==1.0
